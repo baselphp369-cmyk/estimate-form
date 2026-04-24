@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>エアコンクリーニング お見積もり・ご予約 | 町のエアコンお掃除専門店 ＋α</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --rose:#e8547a;--rose-light:#f9d0db;--rose-pale:#fff5f7;--rose-dark:#c73c60;
+  --mint:#5cbfa0;--cream:#fef9f3;--text:#2d2d2d;--text-soft:#6b6b6b;
+  --border:#f0d8de;--radius:20px;--radius-sm:12px;
+  --shadow:0 4px 28px rgba(232,84,122,.1);--shadow-lg:0 12px 48px rgba(232,84,122,.18);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,#e8547a 0%,#f9a8bf 60%,#f4c5d0 100%);padding:28px 20px 32px;text-align:center;position:relative;overflow:hidden;}
+.header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 80%,rgba(255,255,255,.15) 0%,transparent 60%);}
+.header-icon{font-size:36px;margin-bottom:8px;display:block;animation:float 3s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.header-store{color:rgba(255,255,255,.9);font-size:12px;font-family:'Zen Maru Gothic',sans-serif;margin-bottom:4px;}
+.header h1{color:white;font-size:20px;font-weight:900;font-family:'Zen Maru Gothic',sans-serif;letter-spacing:.04em;line-height:1.35;text-shadow:0 2px 8px rgba(0,0,0,.12);position:relative;}
+.header-sub{color:rgba(255,255,255,.85);font-size:12px;margin-top:6px;position:relative;}
+
+/* STEPS */
+.steps-bar{display:flex;justify-content:center;align-items:center;background:white;padding:14px 16px;border-bottom:2px solid var(--rose-light);position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(232,84,122,.08);}
+.step{display:flex;align-items:center;}
+.step-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:#e8e8e8;color:#aaa;transition:all .3s;flex-shrink:0;font-family:'Zen Maru Gothic',sans-serif;}
+.step-dot.active{background:var(--rose);color:white;box-shadow:0 2px 8px rgba(232,84,122,.4);}
+.step-dot.done{background:var(--mint);color:white;}
+.step-label{font-size:11px;color:#aaa;font-weight:600;margin-left:4px;transition:all .3s;white-space:nowrap;}
+.step-label.active{color:var(--rose);}
+.step-label.done{color:var(--mint);}
+.step-line{width:20px;height:2px;background:#e8e8e8;margin:0 4px;flex-shrink:0;transition:all .3s;}
+.step-line.done{background:var(--mint);}
+
+/* LAYOUT */
+.content{padding:16px;max-width:480px;margin:0 auto;}
+.page{display:none;}
+.page.active{display:block;}
+
+/* CARD */
+.card{background:white;border-radius:var(--radius);padding:18px 16px;margin-bottom:14px;box-shadow:var(--shadow);border:1.5px solid var(--border);animation:fadeUp .3s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.card-title{font-family:'Zen Maru Gothic',sans-serif;font-size:14px;font-weight:700;color:var(--rose-dark);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+
+/* SERVICE TABS */
+.svc-tabs{display:flex;gap:8px;margin-bottom:14px;}
+.svc-tab{flex:1;padding:10px 6px;border-radius:var(--radius-sm);border:2px solid var(--border);background:white;text-align:center;cursor:pointer;transition:all .2s;font-family:'Zen Maru Gothic',sans-serif;font-size:12px;font-weight:700;color:var(--text-soft);}
+.svc-tab.active{border-color:var(--rose);background:var(--rose-pale);color:var(--rose-dark);}
+.svc-tab-icon{font-size:20px;display:block;margin-bottom:3px;}
+.svc-panel{display:none;}
+.svc-panel.active{display:block;}
+
+/* COUNTER */
+.counter-wrap{display:flex;align-items:center;justify-content:space-between;background:var(--rose-pale);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:10px;}
+.counter-label-main{font-size:14px;font-weight:700;font-family:'Zen Maru Gothic',sans-serif;}
+.counter-label-sub{font-size:11px;color:var(--rose);font-weight:700;margin-top:2px;}
+.counter-ctrl{display:flex;align-items:center;gap:12px;}
+.c-btn{width:38px;height:38px;border-radius:50%;border:2px solid var(--rose);background:white;color:var(--rose-dark);font-size:22px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;user-select:none;}
+.c-btn:active{background:var(--rose-light);transform:scale(.9);}
+.c-val{font-size:32px;font-weight:900;min-width:38px;text-align:center;font-family:'Zen Maru Gothic',sans-serif;}
+
+/* OPTIONS */
+.opt-row{display:flex;align-items:center;padding:12px;background:var(--rose-pale);border-radius:var(--radius-sm);border:1.5px solid transparent;margin-bottom:8px;cursor:pointer;transition:all .15s;}
+.opt-row.selected{border-color:var(--rose);background:#fff0f4;}
+.opt-check{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);background:white;display:flex;align-items:center;justify-content:center;color:white;font-size:13px;font-weight:700;flex-shrink:0;margin-right:10px;transition:all .15s;}
+.opt-row.selected .opt-check{background:var(--rose-dark);border-color:var(--rose-dark);}
+.opt-info{flex:1;}
+.opt-name{font-size:13px;font-weight:700;line-height:1.3;}
+.opt-price-hint{font-size:11px;color:var(--text-soft);margin-top:2px;}
+.opt-qty-area{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.oq-btn{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--rose);background:white;color:var(--rose-dark);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.oq-btn:active{background:var(--rose-light);}
+.oq-val{font-size:16px;font-weight:700;min-width:20px;text-align:center;}
+.opt-subtotal{font-size:12px;font-weight:700;color:var(--rose);min-width:60px;text-align:right;margin-left:6px;}
+
+/* HOUSE/BATH LIST */
+.house-item{display:flex;align-items:center;padding:11px 12px;background:var(--rose-pale);border-radius:var(--radius-sm);border:1.5px solid transparent;margin-bottom:8px;cursor:pointer;transition:all .15s;}
+.house-item.selected{border-color:var(--rose);background:#fff0f4;}
+.house-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);background:white;display:flex;align-items:center;justify-content:center;color:white;font-size:11px;font-weight:700;flex-shrink:0;margin-right:10px;transition:all .15s;}
+.house-item.selected .house-check{background:var(--rose-dark);border-color:var(--rose-dark);}
+.house-price{font-size:12px;font-weight:700;color:var(--rose);white-space:nowrap;margin-left:6px;}
+.house-note{font-size:10px;color:var(--text-soft);margin-top:1px;}
+
+/* TOTAL */
+.total-card{background:linear-gradient(135deg,var(--rose-dark) 0%,#f4738e 100%);border-radius:var(--radius);padding:22px 20px;box-shadow:var(--shadow-lg);color:white;margin-bottom:14px;}
+.total-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.total-amount{font-size:48px;font-weight:900;letter-spacing:-1px;line-height:1;font-family:'Zen Maru Gothic',sans-serif;}
+.total-amount small{font-size:20px;font-weight:600;margin-left:4px;}
+.total-tax{font-size:11px;opacity:.7;margin-top:4px;}
+.total-breakdown{margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.25);display:flex;flex-direction:column;gap:6px;}
+.bd-row{display:flex;justify-content:space-between;font-size:13px;opacity:.9;}
+.bd-sep{border-top:1px dashed rgba(255,255,255,.2);margin:2px 0;}
+.bd-total{font-weight:700;font-size:15px;padding-top:8px;border-top:1px solid rgba(255,255,255,.2);margin-top:2px;}
+
+/* BTNS */
+.next-btn{width:100%;padding:17px;border-radius:var(--radius-sm);border:none;background:linear-gradient(135deg,var(--rose-dark) 0%,var(--rose) 100%);color:white;font-size:16px;font-weight:700;font-family:'Zen Maru Gothic',sans-serif;cursor:pointer;transition:all .2s;box-shadow:0 6px 20px rgba(232,84,122,.35);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:20px;}
+.next-btn:active{opacity:.9;transform:scale(.98);}
+.next-btn:disabled{background:#ccc;box-shadow:none;cursor:not-allowed;}
+.back-btn{width:100%;padding:14px;border-radius:var(--radius-sm);border:2px solid var(--rose);background:white;color:var(--rose-dark);font-size:14px;font-weight:700;font-family:'Zen Maru Gothic',sans-serif;cursor:pointer;transition:all .15s;margin-bottom:14px;}
+.submit-btn{width:100%;padding:17px;border-radius:var(--radius-sm);border:none;background:linear-gradient(135deg,#5cbfa0 0%,#3da882 100%);color:white;font-size:16px;font-weight:700;font-family:'Zen Maru Gothic',sans-serif;cursor:pointer;transition:all .2s;box-shadow:0 6px 20px rgba(92,191,160,.35);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:20px;}
+.submit-btn:active{opacity:.9;transform:scale(.98);}
+.submit-btn:disabled{background:#ccc;box-shadow:none;cursor:not-allowed;}
+
+/* FORM */
+.form-group{margin-bottom:16px;}
+.form-label{font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px;display:block;}
+.form-label .req{color:var(--rose);font-size:11px;margin-left:4px;font-weight:600;}
+.form-input{width:100%;padding:13px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:15px;font-family:'Noto Sans JP',sans-serif;color:var(--text);background:var(--rose-pale);transition:border-color .15s;}
+.form-input:focus{outline:none;border-color:var(--rose);background:white;}
+.form-input.err{border-color:#ef4444;background:#fff5f5;}
+.form-select{width:100%;padding:13px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:'Noto Sans JP',sans-serif;color:var(--text);background:var(--rose-pale);appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c73c60' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;}
+.form-select:focus{outline:none;border-color:var(--rose);}
+.form-textarea{width:100%;padding:13px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:'Noto Sans JP',sans-serif;color:var(--text);background:var(--rose-pale);resize:vertical;min-height:90px;}
+.form-textarea:focus{outline:none;border-color:var(--rose);background:white;}
+.form-hint{font-size:11px;color:var(--text-soft);margin-top:5px;line-height:1.5;}
+.errmsg{font-size:11px;color:#ef4444;font-weight:600;margin-top:4px;display:none;}
+.errmsg.show{display:block;}
+
+/* RADIO */
+.radio-group{display:flex;flex-direction:column;gap:8px;}
+.radio-row{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--rose-pale);border-radius:var(--radius-sm);border:1.5px solid transparent;cursor:pointer;transition:all .15s;}
+.radio-row.sel{border-color:var(--rose);background:#fff0f4;}
+.radio-dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);background:white;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.radio-dot.chk::after{content:'';width:10px;height:10px;border-radius:50%;background:var(--rose-dark);display:block;}
+.radio-label{font-size:13px;font-weight:700;}
+
+/* WARNINGS */
+.warn-box{display:none;margin-top:6px;padding:10px;background:#fff5f0;border:1.5px solid #fca5a5;border-radius:10px;font-size:12px;color:#b91c1c;font-weight:700;}
+.warn-box.show{display:block;}
+.notice-box{background:#fffbeb;border:1.5px solid #fcd34d;border-radius:var(--radius-sm);padding:12px;font-size:12px;color:#78350f;line-height:1.7;margin-bottom:14px;}
+
+/* AC INFO UNITS */
+.ac-unit{background:var(--rose-pale);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px;border:1.5px solid var(--border);}
+.ac-unit-title{font-size:13px;font-weight:700;color:var(--rose-dark);font-family:'Zen Maru Gothic',sans-serif;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+
+/* CONFIRM */
+.confirm-row{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--rose-light);font-size:13px;}
+.confirm-row:last-child{border-bottom:none;}
+.confirm-label{color:var(--text-soft);font-weight:500;flex-shrink:0;margin-right:8px;}
+.confirm-value{font-weight:700;color:var(--text);text-align:right;}
+
+/* COMPLETE */
+.complete-wrap{text-align:center;padding:32px 16px;}
+.complete-icon{font-size:64px;margin-bottom:16px;display:block;animation:popIn .5s cubic-bezier(.34,1.56,.64,1);}
+@keyframes popIn{from{transform:scale(0)}to{transform:scale(1)}}
+.complete-title{font-family:'Zen Maru Gothic',sans-serif;font-size:22px;font-weight:900;color:var(--rose-dark);margin-bottom:8px;}
+.complete-sub{font-size:13px;color:var(--text-soft);line-height:1.8;margin-bottom:24px;}
+.complete-box{background:var(--rose-pale);border:1.5px solid var(--rose-light);border-radius:var(--radius);padding:18px;margin-bottom:20px;text-align:left;}
+.complete-box-title{font-size:12px;font-weight:700;color:var(--rose-dark);margin-bottom:10px;font-family:'Zen Maru Gothic',sans-serif;}
+.restart-btn{width:100%;padding:14px;border-radius:var(--radius-sm);border:2px solid var(--rose);background:white;color:var(--rose-dark);font-size:14px;font-weight:700;font-family:'Zen Maru Gothic',sans-serif;cursor:pointer;}
+
+/* LOADING */
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;backdrop-filter:blur(4px);}
+.loading-overlay.hidden{display:none;}
+.spinner{width:44px;height:44px;border:4px solid var(--rose-light);border-top-color:var(--rose);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:12px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:13px;color:var(--rose-dark);font-weight:600;font-family:'Zen Maru Gothic',sans-serif;}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay hidden" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text">料金データを読み込み中…</div>
+</div>
+
+<div class="header">
+  <span class="header-icon">🌸</span>
+  <h1>料金かんたん試算・<br>ご予約フォーム</h1>
+  <div class="header-sub">所要約3分 ｜ 無料お見積もり</div>
+</div>
+
+<div class="steps-bar">
+  <div class="step"><div class="step-dot active" id="dot1">1</div><div class="step-label active" id="lbl1">試算</div></div>
+  <div class="step-line" id="line1"></div>
+  <div class="step"><div class="step-dot" id="dot2">2</div><div class="step-label" id="lbl2">確認</div></div>
+  <div class="step-line" id="line2"></div>
+  <div class="step"><div class="step-dot" id="dot3">3</div><div class="step-label" id="lbl3">予約</div></div>
+  <div class="step-line" id="line3"></div>
+  <div class="step"><div class="step-dot" id="dot4">4</div><div class="step-label" id="lbl4">完了</div></div>
+</div>
+
+<div class="content">
+
+<!-- ===== PAGE1: 試算 ===== -->
+<div class="page active" id="page1">
+
+  <div class="svc-tabs">
+    <div class="svc-tab active" id="tab-ac" onclick="switchTab('ac')"><span class="svc-tab-icon">❄️</span>エアコン</div>
+    <div class="svc-tab" id="tab-bath" onclick="switchTab('bath')"><span class="svc-tab-icon">🛁</span>浴室</div>
+    <div class="svc-tab" id="tab-house" onclick="switchTab('house')"><span class="svc-tab-icon">🏠</span>ハウス</div>
+  </div>
+
+  <!-- エアコンパネル -->
+  <div class="svc-panel active" id="panel-ac">
+    <div class="card">
+      <div class="card-title"><span>❄️</span>台数を選んでください</div>
+      <div class="counter-wrap">
+        <div><div class="counter-label-main">🌬️ 通常タイプ</div><div class="counter-label-sub" id="hintNormal"></div></div>
+        <div class="counter-ctrl">
+          <button class="c-btn" onclick="changeCount('normal',-1)">－</button>
+          <div class="c-val" id="countNormal">0</div>
+          <button class="c-btn" onclick="changeCount('normal',1)">＋</button>
+        </div>
+      </div>
+      <div class="counter-wrap" style="margin-bottom:0;">
+        <div><div class="counter-label-main">✨ お掃除機能付き</div><div class="counter-label-sub" id="hintOsouji"></div></div>
+        <div class="counter-ctrl">
+          <button class="c-btn" onclick="changeCount('osouji',-1)">－</button>
+          <div class="c-val" id="countOsouji">0</div>
+          <button class="c-btn" onclick="changeCount('osouji',1)">＋</button>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:11px;color:var(--text-soft);text-align:center;line-height:1.7;background:var(--rose-pale);border-radius:10px;padding:8px;">
+        ※ 両方ある場合はそれぞれ入力してください ／ 5台以上は単価計算
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span>🌿</span>オプション（任意）</div>
+      <div id="optionList"></div>
+    </div>
+  </div>
+
+  <!-- 浴室パネル -->
+  <div class="svc-panel" id="panel-bath">
+    <div class="card">
+      <div class="card-title"><span>🛁</span>浴室クリーニング メニューを選んでください</div>
+      <div id="bathList"></div>
+      <div style="font-size:11px;color:var(--text-soft);margin-top:8px;line-height:1.6;">※ 給湯器分解洗浄・ジェットバス分解洗浄は大阪エリアのみ</div>
+    </div>
+  </div>
+
+  <!-- ハウスパネル -->
+  <div class="svc-panel" id="panel-house">
+    <div class="card">
+      <div class="card-title"><span>🏠</span>ハウスクリーニング メニューを選んでください</div>
+      <div class="notice-box">※ ハウスクリーニングは大阪・兵庫一部エリアのみ対応</div>
+      <div id="houseList"></div>
+    </div>
+  </div>
+
+  <!-- 合計 -->
+  <div class="total-card">
+    <div class="total-header"><span style="font-size:20px;">💰</span><span style="font-size:13px;font-weight:600;opacity:.9;font-family:'Zen Maru Gothic',sans-serif;">概算お見積もり金額</span></div>
+    <div class="total-amount" id="totalAmount">¥0<small>円</small></div>
+    <div class="total-tax">税込・出張費込み</div>
+    <div class="total-breakdown" id="breakdown"></div>
+  </div>
+  <div class="notice-box">💡 こちらは【概算のご参考金額】です。実際の金額は作業前にスタッフがご確認します。追加費用が発生する場合は必ず事前にご説明いたします。</div>
+  <button class="next-btn" id="nextBtn1" onclick="goToConfirm()" disabled>この内容で進む →</button>
+</div>
+
+<!-- ===== PAGE2: 確認 ===== -->
+<div class="page" id="page2">
+  <div class="card">
+    <div class="card-title"><span>📋</span>お見積もり内容の確認</div>
+    <div id="confirmSummary"></div>
+  </div>
+  <div class="total-card">
+    <div class="total-header"><span style="font-size:20px;">💰</span><span style="font-size:13px;font-weight:600;opacity:.9;font-family:'Zen Maru Gothic',sans-serif;">概算お見積もり金額</span></div>
+    <div class="total-amount" id="confirmTotalAmount">¥0<small>円</small></div>
+    <div class="total-tax">税込・出張費込み</div>
+  </div>
+  <button class="next-btn" onclick="goToPage(3)">この金額でご予約に進む →</button>
+  <button class="back-btn" onclick="goToPage(1)">← 内容を変更する</button>
+</div>
+
+<!-- ===== PAGE3: 予約フォーム ===== -->
+<div class="page" id="page3">
+
+  <!-- お客様情報 -->
+  <div class="card">
+    <div class="card-title"><span>📝</span>お客様情報</div>
+    <div class="form-group">
+      <label class="form-label">お名前<span class="req">必須</span></label>
+      <input type="text" class="form-input" id="f_name" placeholder="山田 花子">
+      <div class="errmsg" id="err_name">お名前をご入力ください</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">電話番号<span class="req">必須</span></label>
+      <input type="tel" class="form-input" id="f_tel" placeholder="090-0000-0000">
+      <div class="errmsg" id="err_tel">電話番号をご入力ください</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">メールアドレス<span class="req">必須</span></label>
+      <input type="email" class="form-input" id="f_email" placeholder="example@gmail.com">
+      <div class="errmsg" id="err_email">メールアドレスをご入力ください</div>
+      <div class="form-hint">⚠️ docomo（@docomo.ne.jp）・au（@ezweb.ne.jp）・softbank（@softbank.ne.jp）等のキャリアメールは届かない場合があります。GmailやYahooメール等の使用を推奨します。<br>📧 予約確定メールへは24時間以内にご返信ください。</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">ご住所<span class="req">必須</span></label>
+      <input type="text" class="form-input" id="f_address" placeholder="神奈川県横浜市○○区○○町1-2-3">
+      <div class="errmsg" id="err_address">ご住所をご入力ください</div>
+    </div>
+    <div class="form-group" style="margin-bottom:0;">
+      <label class="form-label">建物名・部屋番号</label>
+      <input type="text" class="form-input" id="f_building" placeholder="○○マンション 101号室">
+      <div class="form-hint">マンション・アパートの方はご入力ください</div>
+    </div>
+  </div>
+
+  <!-- 駐車スペース -->
+  <div class="card">
+    <div class="card-title"><span>🚗</span>駐車スペースについて</div>
+    <div class="notice-box" style="margin-bottom:12px;">
+      🚫 近隣の商業施設等の駐車場はご利用者専用のためお断りしております。<br>
+      🚫 路上駐車は基本的にお断りしております。<br>
+      🔄 お客様の自家用車との入れ替えをお願いする場合がございます。<br>
+      💴 駐車料金が発生する場合は作業料金とは別途いただいております。
+    </div>
+    <div class="form-group" style="margin-bottom:0;">
+      <label class="form-label">駐車スペースの有無<span class="req">必須</span></label>
+      <div class="radio-group">
+        <div class="radio-row" onclick="selectRadio('parking','yes')"><div class="radio-dot" id="radio_parking_yes"></div><span class="radio-label">🅿️ 駐車スペースあり</span></div>
+        <div class="radio-row" onclick="selectRadio('parking','swap')"><div class="radio-dot" id="radio_parking_swap"></div><span class="radio-label">🔄 自家用車との入れ替えで対応可能</span></div>
+        <div class="radio-row" onclick="selectRadio('parking','paid')"><div class="radio-dot" id="radio_parking_paid"></div><span class="radio-label">💴 近隣に有料駐車場あり（別途実費）</span></div>
+        <div class="radio-row" onclick="selectRadio('parking','none')"><div class="radio-dot" id="radio_parking_none"></div><span class="radio-label">❌ 駐車スペースなし・不明</span></div>
+      </div>
+      <div class="errmsg" id="err_parking">駐車スペースの状況をお選びください</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span>📅</span>ご希望の日程</div>
+    <div class="notice-box">⏰ 時間は【到着時間の目安】です。施工完了時間ではございません</div>
+
+    <div class="form-group">
+      <label class="form-label">第1希望日<span class="req">必須</span></label>
+      <input type="date" class="form-input" id="f_date1">
+      <div class="errmsg" id="err_date1">第1希望日をご入力ください</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">第1希望 到着時間帯<span class="req">必須</span></label>
+      <select class="form-select" id="f_time1">
+        <option value="">選択してください</option>
+        <option value="8-9">8時〜9時の間に到着</option>
+        <option value="12-15">12時〜15時の間に到着</option>
+        <option value="15-18">15時〜18時の間に到着</option>
+      </select>
+      <div class="errmsg" id="err_time1">時間帯を選択してください</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">第2希望日<span class="req">必須</span></label>
+      <input type="date" class="form-input" id="f_date2">
+      <div class="errmsg" id="err_date2">第2希望日をご入力ください</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">第2希望 到着時間帯<span class="req">必須</span></label>
+      <select class="form-select" id="f_time2">
+        <option value="">選択してください</option>
+        <option value="8-9">8時〜9時の間に到着</option>
+        <option value="12-15">12時〜15時の間に到着</option>
+        <option value="15-18">15時〜18時の間に到着</option>
+      </select>
+      <div class="errmsg" id="err_time2">時間帯を選択してください</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">第3希望日<span class="req">必須</span></label>
+      <input type="date" class="form-input" id="f_date3">
+      <div class="errmsg" id="err_date3">第3希望日をご入力ください</div>
+    </div>
+    <div class="form-group" style="margin-bottom:0;">
+      <label class="form-label">第3希望 到着時間帯<span class="req">必須</span></label>
+      <select class="form-select" id="f_time3">
+        <option value="">選択してください</option>
+        <option value="8-9">8時〜9時の間に到着</option>
+        <option value="12-15">12時〜15時の間に到着</option>
+        <option value="15-18">15時〜18時の間に到着</option>
+      </select>
+      <div class="errmsg" id="err_time3">時間帯を選択してください</div>
+    </div>
+  </div>
+
+  <!-- エアコン情報（台数分動的生成） -->
+  <div id="acInfoSection"></div>
+
+  <!-- 支払い -->
+  <div class="card">
+    <div class="card-title"><span>💳</span>お支払い方法</div>
+    <div class="radio-group">
+      <div class="radio-row" onclick="selectRadio('payment','cash')"><div class="radio-dot" id="radio_payment_cash"></div><span class="radio-label">💴 現金</span></div>
+      <div class="radio-row" onclick="selectRadio('payment','card')"><div class="radio-dot" id="radio_payment_card"></div><span class="radio-label">💳 クレジットカード</span></div>
+      <div class="radio-row" onclick="selectRadio('payment','paypay')"><div class="radio-dot" id="radio_payment_paypay"></div><span class="radio-label">📱 PayPay</span></div>
+    </div>
+  </div>
+
+  <!-- ご利用回数 -->
+  <div class="card">
+    <div class="card-title"><span>🔁</span>当店のご利用について</div>
+    <div class="form-group">
+      <label class="form-label">ご利用は何回目ですか？<span class="req">必須</span></label>
+      <div class="radio-group">
+        <div class="radio-row" onclick="selectRadio('visit','first');toggleMedia(false)"><div class="radio-dot" id="radio_visit_first"></div><span class="radio-label">はじめて</span></div>
+        <div class="radio-row" onclick="selectRadio('visit','repeat');toggleMedia(true)"><div class="radio-dot" id="radio_visit_repeat"></div><span class="radio-label">2回目以上</span></div>
+      </div>
+      <div class="errmsg" id="err_visit">ご利用回数をお選びください</div>
+    </div>
+    <div id="mediaWrap" style="display:none;">
+      <label class="form-label" style="margin-bottom:8px;">前回のご予約媒体<span class="req">必須</span></label>
+      <div class="radio-group">
+        <div class="radio-row" onclick="selectRadio('media','yourmeister')"><div class="radio-dot" id="radio_media_yourmeister"></div><span class="radio-label">ユアマイスター</span></div>
+        <div class="radio-row" onclick="selectRadio('media','kurashi')"><div class="radio-dot" id="radio_media_kurashi"></div><span class="radio-label">くらしのマーケット</span></div>
+        <div class="radio-row" onclick="selectRadio('media','mitsumoa')"><div class="radio-dot" id="radio_media_mitsumoa"></div><span class="radio-label">ミツモア</span></div>
+        <div class="radio-row" onclick="selectRadio('media','ouchini')"><div class="radio-dot" id="radio_media_ouchini"></div><span class="radio-label">おうちにプロ</span></div>
+        <div class="radio-row" onclick="selectRadio('media','other')"><div class="radio-dot" id="radio_media_other"></div><span class="radio-label">その他</span></div>
+      </div>
+      <div class="errmsg" id="err_media">前回のご予約媒体をお選びください</div>
+    </div>
+  </div>
+
+  <!-- 備考 -->
+  <div class="card">
+    <div class="card-title"><span>💬</span>ご不明な点・気になる汚れなど</div>
+    <textarea class="form-textarea" id="f_note" placeholder="ご不明な点、特に汚れが気になる箇所等ございましたら、こちらへご記入ください"></textarea>
+  </div>
+
+  <div class="notice-box">📧 ご予約後、担当スタッフよりご登録いただいたメールへご返信いたします（通常1〜2営業日以内）。</div>
+  <button class="submit-btn" onclick="submitBooking()">🌸 予約リクエストを送信する</button>
+  <button class="back-btn" onclick="goToPage(2)">← 見積もり内容に戻る</button>
+</div>
+
+<!-- ===== PAGE4: 完了 ===== -->
+<div class="page" id="page4">
+  <div class="complete-wrap">
+    <span class="complete-icon">🎉</span>
+    <div class="complete-title">予約リクエスト完了！</div>
+    <div class="complete-sub">ご予約ありがとうございます✨<br>担当スタッフより1〜2営業日以内に<br>お電話またはLINEにてご連絡します。<br><br>お気軽にお待ちください🌸</div>
+    <div class="complete-box">
+      <div class="complete-box-title">📋 ご予約内容</div>
+      <div id="completeSummary"></div>
+    </div>
+    <button class="restart-btn" onclick="restartAll()">🔄 はじめからやり直す</button>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<script>
+// ===== 設定 =====
+const BOOKING_API_URL = 'https://script.google.com/macros/s/AKfycbxwvLx_UPGH8D7_eKhW7pWWi2iRkjTemyxkj5kfPRf0g6Yo0ElKQ9RuMSxHtahE6-OL/exec';
+
+// ===== エアコン状態 =====
+let normalCount = 0, osoujiCount = 0, optQty = {}, priceData = null;
+
+// ===== 料金変数（スプレッドシートから上書きされる／失敗時はここの値を使用） =====
+let NORMAL_UNIT  = [7900,7600,7300,7100];
+let NORMAL_5PLUS = 6900;
+let OSOUJI_EXTRA = 6000;
+let KOSHO_FEE    = 3000;
+
+// ===== 設置場所 =====
+const LOCATIONS = ['リビング','寝室','子供部屋','和室','洗面所','キッチン','その他'];
+
+// ===== エアコンオプション =====
+const AC_OPTIONS = [
+  {id:'boka',        name:'防カビ・抗菌コート',                                price:3000},
+  {id:'gaiki',       name:'室外機洗浄',                                         price:4000},
+  {id:'dorain',      name:'ドレンホース洗浄',                                   price:2500},
+  {id:'umekomu',     name:'埋込み・天吊りエアコン',                              price:14400, note:'14,400円〜/台'},
+  {id:'meisi',       name:'スタッフ指名料',                                     price:2500},
+  {id:'ecacut',      name:'消音器具取り付け エアカットバルブ',                   price:2500},
+  {id:'pate',        name:'パテ埋め',                                           price:2500},
+  {id:'set_omatome', name:'🥇 おまとめセット（防カビ＋室外機）★人気No.1',        price:5000},
+  {id:'set_marugoto',name:'🥈 まるごとセット（防カビ＋室外機＋ドレン）★人気No.2',price:7000},
+];
+
+// ===== 浴室メニュー =====
+const BATH_ITEMS = [
+  {id:'b_kama',    name:'風呂釜洗浄',         price:18000, note:'全国1位'},
+  {id:'b_kyutou',  name:'給湯器分解洗浄',      price:15000, note:'※大阪のみ'},
+  {id:'b_jet',     name:'ジェットバス分解洗浄', price:39800, note:'※大阪のみ'},
+  {id:'b_yokusoura',name:'浴槽裏洗浄',         price:5000},
+  {id:'b_cleaning',name:'浴室クリーニング',     price:16800, note:'16,800円〜 大阪・兵庫一部'},
+  {id:'b_kanki2',  name:'浴室多機能換気扇',     price:10000, note:'大阪・兵庫一部'},
+  {id:'b_kanki1',  name:'浴室換気扇',           price:5000},
+];
+let bathSel = {};
+
+// ===== ハウスクリーニング =====
+const HOUSE_ITEMS = [
+  {id:'h_range',  name:'レンジフード',  price:12800, note:'12,800円〜'},
+  {id:'h_kitchen',name:'キッチン',      price:16800, note:'16,800円〜'},
+  {id:'h_toilet', name:'トイレ',        price:8000},
+  {id:'h_wash',   name:'洗面台',        price:8000},
+  {id:'h_window', name:'窓',            price:3000, note:'1枚3,000円〜（2枚で8,000円ほど）', perUnit:true},
+  {id:'h_veranda',name:'ベランダ',      price:8000, note:'8,000円〜'},
+  {id:'h_genkan', name:'玄関',          price:8000, note:'8,000円〜'},
+  {id:'h_yuka',   name:'床',            price:0,    note:'お見積もり'},
+];
+let houseSel = {}, houseQty = {};
+
+// ===== エアコン台別情報 =====
+let acUnits = []; // [{type, model, year, location, kosho}]
+
+// ===== ラジオ状態 =====
+const radioState = {};
+
+// ===== 初期化 =====
+window.addEventListener('DOMContentLoaded', () => {
+  loadPriceData();
+  setMinDate();
+  renderAcOptions();
+  renderBathList();
+  renderHouseList();
+  calc();
+});
+
+function setMinDate() {
+  const d = new Date(); d.setDate(d.getDate()+7);
+  const min = d.toISOString().slice(0,10);
+  ['f_date1','f_date2','f_date3'].forEach(id => { const el=document.getElementById(id); if(el) el.min=min; });
+}
+
+// ===== タブ =====
+function switchTab(tab) {
+  ['ac','bath','house'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('panel-'+t).classList.toggle('active', t===tab);
+  });
+  calc(); updateNextBtn();
+}
+
+// ===== スプレッドシートから料金取得 =====
+function loadPriceData() {
+  document.getElementById('loadingOverlay').classList.remove('hidden');
+  fetch(BOOKING_API_URL)
+    .then(r => r.json())
+    .then(j => {
+      document.getElementById('loadingOverlay').classList.add('hidden');
+      if(j.status === 'ok' && j.prices) {
+        const p = j.prices;
+        // エアコン通常単価（B列は1台あたりの単価）
+        NORMAL_UNIT = [
+          p['通常1台'] || NORMAL_UNIT[0],
+          p['通常2台'] || NORMAL_UNIT[1],
+          p['通常3台'] || NORMAL_UNIT[2],
+          p['通常4台'] || NORMAL_UNIT[3],
+        ];
+        NORMAL_5PLUS = p['通常5台以降単価'] || NORMAL_5PLUS;
+        OSOUJI_EXTRA = p['お掃除上乗せ額']  || OSOUJI_EXTRA;
+        KOSHO_FEE    = p['高所作業費']      || KOSHO_FEE;
+        // オプション料金を上書き
+        const optMap = {
+          'boka':        '防カビ・抗菌コート',
+          'gaiki':       '室外機洗浄',
+          'dorain':      'ドレンホース洗浄',
+          'umekomu':     '埋込み・天吊りエアコン',
+          'meisi':       'スタッフ指名料',
+          'ecacut':      'エアカットバルブ',
+          'pate':        'パテ埋め',
+          'set_omatome': 'おまとめセット',
+          'set_marugoto':'まるごとセット',
+        };
+        AC_OPTIONS.forEach(opt => {
+          const key = optMap[opt.id];
+          if(key && p[key] !== undefined) opt.price = p[key];
+        });
+        // 浴室・ハウス料金を上書き
+        const bathMap = {
+          'b_kama':'風呂釜洗浄','b_kyutou':'給湯器分解洗浄','b_jet':'ジェットバス分解洗浄',
+          'b_yokusoura':'浴槽裏洗浄','b_cleaning':'浴室クリーニング',
+          'b_kanki2':'浴室多機能換気扇','b_kanki1':'浴室換気扇'
+        };
+        BATH_ITEMS.forEach(item => { if(bathMap[item.id] && p[bathMap[item.id]] !== undefined) item.price = p[bathMap[item.id]]; });
+        const houseMap = {
+          'h_range':'レンジフード','h_kitchen':'キッチン','h_toilet':'トイレ',
+          'h_wash':'洗面台','h_window':'窓','h_veranda':'ベランダ','h_genkan':'玄関','h_yuka':'床'
+        };
+        HOUSE_ITEMS.forEach(item => { if(houseMap[item.id] && p[houseMap[item.id]] !== undefined) item.price = p[houseMap[item.id]]; });
+      }
+      renderAcOptions(); renderBathList(); renderHouseList(); calc();
+    })
+    .catch(() => {
+      document.getElementById('loadingOverlay').classList.add('hidden');
+      renderAcOptions(); renderBathList(); renderHouseList(); calc();
+    });
+}
+
+// ===== 料金計算 =====
+function calcNormalAmt(n) {
+  if(n<=0) return 0;
+  if(n<=4) return NORMAL_UNIT[n-1]*n;
+  // 5台以降：全台数 × 5台以降単価
+  return NORMAL_5PLUS * n;
+}
+function calcOsoujiAmt(n) {
+  if(n<=0) return 0;
+  if(n<=4) return (NORMAL_UNIT[n-1]+OSOUJI_EXTRA)*n;
+  // 5台以降：全台数 × (5台以降単価 + お掃除上乗せ額)
+  return (NORMAL_5PLUS + OSOUJI_EXTRA) * n;
+}
+function getHint(type, n) {
+  if(n<=0) return '';
+  const total = type==='normal' ? calcNormalAmt(n) : calcOsoujiAmt(n);
+  const unit = Math.round(total / n);
+  return n+'台 → ¥'+total.toLocaleString()+'（1台あたり¥'+unit.toLocaleString()+'）';
+}
+
+// ===== カウンター =====
+function changeCount(type, delta) {
+  if(type==='normal') { normalCount=Math.max(0,Math.min(10,normalCount+delta)); document.getElementById('countNormal').textContent=normalCount; }
+  else { osoujiCount=Math.max(0,Math.min(10,osoujiCount+delta)); document.getElementById('countOsouji').textContent=osoujiCount; }
+  rebuildAcUnits();
+  calc(); updateNextBtn();
+}
+
+// ===== エアコン台別情報 再構築 =====
+function rebuildAcUnits() {
+  const total = normalCount + osoujiCount;
+  // 既存情報を保持しながら増減
+  while(acUnits.length < total) acUnits.push({model:'',year:'',location:'',kosho:false});
+  acUnits = acUnits.slice(0, total);
+  // typeを付け直す
+  for(let i=0;i<normalCount;i++) acUnits[i].type='normal';
+  for(let i=0;i<osoujiCount;i++) acUnits[normalCount+i].type='osouji';
+  renderAcInfoSection();
+}
+
+function renderAcInfoSection() {
+  const sec = document.getElementById('acInfoSection'); if(!sec) return;
+  if(acUnits.length===0){ sec.innerHTML=''; return; }
+  let html = '<div class="card"><div class="card-title"><span>❄️</span>エアコン情報</div>';
+  acUnits.forEach((u,i) => {
+    const typeLabel = u.type==='normal'?'通常タイプ':'お掃除機能付き';
+    const typeIcon = u.type==='normal'?'🌬️':'✨';
+    html += `<div class="ac-unit">
+      <div class="ac-unit-title">${typeIcon} ${typeLabel} ${i+1}台目</div>
+      <div class="form-group">
+        <label class="form-label">設置場所</label>
+        <select class="form-select" id="ac_loc_${i}" onchange="acUnits[${i}].location=this.value">
+          <option value="">選択してください</option>
+          ${LOCATIONS.map(l=>'<option value="'+l+'"'+(u.location===l?' selected':'')+'>'+l+'</option>').join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">型番（半角）</label>
+        <input type="text" class="form-input" id="ac_model_${i}" value="${u.model}" placeholder="例：MSZ-GV2523"
+          style="font-family:monospace;" oninput="acUnits[${i}].model=this.value;checkModel(${i},this.value)">
+        <div class="form-hint">半角でご入力ください</div>
+        <div class="warn-box" id="model_warn_${i}">⚠️ 対応外機種の可能性があります。詳細はスタッフよりご確認します。</div>
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">製造年（西暦4桁）</label>
+        <input type="number" class="form-input" id="ac_year_${i}" value="${u.year||''}" placeholder="例：2019" min="1990" max="2030"
+          oninput="acUnits[${i}].year=this.value;checkYear(${i},this.value)">
+        <div class="form-hint">9年以上経過の場合は保証対象外となります</div>
+        <div class="warn-box" id="year_warn_${i}">⚠️ 製造から9年以上経過しているため【保証対象外】となります。作業前にスタッフよりご説明いたします。</div>
+      </div>
+      <div class="form-group" style="margin-top:12px;margin-bottom:0;">
+        <label class="form-label">床からエアコン吹き出し口までの高さ</label>
+        <div class="radio-group">
+          <div class="radio-row ${!u.kosho?'sel':''}" onclick="setKosho(${i},false)">
+            <div class="radio-dot ${!u.kosho?'chk':''}" id="kosho_no_${i}"></div>
+            <span class="radio-label">2.3m未満（通常）</span>
+          </div>
+          <div class="radio-row ${u.kosho?'sel':''}" onclick="setKosho(${i},true)">
+            <div class="radio-dot ${u.kosho?'chk':''}" id="kosho_yes_${i}"></div>
+            <span class="radio-label">2.3m以上 → 高所作業費 ＋¥3,000</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  sec.innerHTML = html;
+  calc();
+}
+
+function setKosho(i, val) {
+  acUnits[i].kosho = val;
+  renderAcInfoSection();
+}
+
+// ===== 対応外型番チェック =====
+const NG_MODELS = []; // 例: [/^SRK/i, /^CS-/i] 対応外パターンを追加
+function checkModel(i, val) {
+  const w = document.getElementById('model_warn_'+i); if(!w) return;
+  w.classList.toggle('show', val.trim()!=='' && NG_MODELS.some(p=>p.test(val)));
+}
+function checkYear(i, val) {
+  const w = document.getElementById('year_warn_'+i); if(!w) return;
+  const y=parseInt(val), age=new Date().getFullYear()-y;
+  w.classList.toggle('show', val.length>=4 && !isNaN(y) && age>=9);
+}
+
+// ===== ラジオ =====
+function selectRadio(group, val) {
+  radioState[group]=val;
+  document.querySelectorAll('[id^="radio_'+group+'_"]').forEach(el=>{ el.classList.remove('chk'); el.closest('.radio-row')?.classList.remove('sel'); });
+  const dot=document.getElementById('radio_'+group+'_'+val);
+  if(dot){ dot.classList.add('chk'); dot.closest('.radio-row')?.classList.add('sel'); }
+}
+function toggleMedia(show) {
+  const w=document.getElementById('mediaWrap'); if(w) w.style.display=show?'block':'none';
+  if(!show){ radioState['media']=null; document.querySelectorAll('[id^="radio_media_"]').forEach(el=>{ el.classList.remove('chk'); el.closest('.radio-row')?.classList.remove('sel'); }); }
+}
+
+// ===== オプション =====
+function changeOpt(id, delta) { optQty[id]=Math.max(0,(optQty[id]||0)+delta); renderAcOptions(); calc(); }
+function toggleOpt(id) { optQty[id]=(optQty[id]||0)>0?0:1; renderAcOptions(); calc(); }
+function renderAcOptions() {
+  const list=document.getElementById('optionList'); if(!list) return;
+  list.innerHTML='';
+  AC_OPTIONS.forEach(opt => {
+    const qty=optQty[opt.id]||0, isOn=qty>0;
+    const row=document.createElement('div');
+    row.className='opt-row'+(isOn?' selected':'');
+    const priceLabel=opt.note?opt.note:(opt.price?'¥'+opt.price.toLocaleString()+' / 台':'—');
+    row.innerHTML=`<div class="opt-check">${isOn?'✓':''}</div>
+      <div class="opt-info" onclick="toggleOpt('${opt.id}')"><div class="opt-name">${opt.name}</div><div class="opt-price-hint">${priceLabel}</div></div>
+      <div class="opt-qty-area">
+        <button class="oq-btn" onclick="event.stopPropagation();changeOpt('${opt.id}',-1)">－</button>
+        <div class="oq-val">${qty}</div>
+        <button class="oq-btn" onclick="event.stopPropagation();changeOpt('${opt.id}',1)">＋</button>
+      </div>
+      <div class="opt-subtotal">${qty>0&&opt.price>0?'¥'+(opt.price*qty).toLocaleString():''}</div>`;
+    list.appendChild(row);
+  });
+}
+
+// ===== 浴室 =====
+function toggleBath(id) { bathSel[id]=!bathSel[id]; renderBathList(); calc(); updateNextBtn(); }
+function renderBathList() {
+  const list=document.getElementById('bathList'); if(!list) return;
+  list.innerHTML='';
+  BATH_ITEMS.forEach(item=>{
+    const on=!!bathSel[item.id];
+    const el=document.createElement('div');
+    el.className='house-item'+(on?' selected':'');
+    el.onclick=()=>toggleBath(item.id);
+    el.innerHTML=`<div class="house-check">${on?'✓':''}</div>
+      <div style="flex:1;"><div style="font-size:13px;font-weight:700;">${item.name}</div>${item.note?'<div class="house-note">'+item.note+'</div>':''}</div>
+      <div class="house-price">${item.price>0?'¥'+item.price.toLocaleString():'お見積もり'}</div>`;
+    list.appendChild(el);
+  });
+}
+
+// ===== ハウス =====
+function toggleHouse(id) { houseSel[id]=!houseSel[id]; if(!houseSel[id]) houseQty[id]=0; renderHouseList(); calc(); updateNextBtn(); }
+function changeHouseQty(id, delta) { houseQty[id]=Math.max(1,(houseQty[id]||1)+delta); houseSel[id]=true; renderHouseList(); calc(); }
+function renderHouseList() {
+  const list=document.getElementById('houseList'); if(!list) return;
+  list.innerHTML='';
+  HOUSE_ITEMS.forEach(item=>{
+    const on=!!houseSel[item.id], qty=houseQty[item.id]||1;
+    const el=document.createElement('div');
+    el.className='house-item'+(on?' selected':'');
+    const priceStr=item.price===0?'お見積もり':'¥'+item.price.toLocaleString()+(item.note&&item.note.includes('〜')?'〜':'');
+    const qtyHtml=item.perUnit?`<div class="opt-qty-area" style="margin-right:4px;">
+      <button class="oq-btn" onclick="event.stopPropagation();changeHouseQty('${item.id}',-1)">－</button>
+      <div class="oq-val">${qty}</div>
+      <button class="oq-btn" onclick="event.stopPropagation();changeHouseQty('${item.id}',1)">＋</button></div>`:'';
+    el.innerHTML=`<div class="house-check" onclick="toggleHouse('${item.id}')">${on?'✓':''}</div>
+      <div style="flex:1;" onclick="toggleHouse('${item.id}')"><div style="font-size:13px;font-weight:700;">${item.name}</div>${item.note?'<div class="house-note">'+item.note+'</div>':''}</div>
+      ${qtyHtml}<div class="house-price">${on&&item.price>0?'¥'+(item.price*(item.perUnit?qty:1)).toLocaleString():priceStr}</div>`;
+    list.appendChild(el);
+  });
+}
+
+// ===== 合計計算 =====
+function getTotalAmount() {
+  const nAmt=calcNormalAmt(normalCount), oAmt=calcOsoujiAmt(osoujiCount);
+  const optAmt=AC_OPTIONS.reduce((s,o)=>{const q=optQty[o.id]||0;return s+(q>0&&o.price>0?o.price*q:0);},0);
+  const koshoAmt=acUnits.filter(u=>u.kosho).length*KOSHO_FEE;
+  const bathAmt=BATH_ITEMS.reduce((s,b)=>s+(bathSel[b.id]?b.price:0),0);
+  const houseAmt=HOUSE_ITEMS.reduce((s,h)=>{if(!houseSel[h.id])return s;const q=houseQty[h.id]||1;return s+h.price*(h.perUnit?q:1);},0);
+  return nAmt+oAmt+optAmt+koshoAmt+bathAmt+houseAmt;
+}
+
+function calc() {
+  const nAmt=calcNormalAmt(normalCount), oAmt=calcOsoujiAmt(osoujiCount);
+  document.getElementById('hintNormal').textContent=getHint('normal',normalCount);
+  document.getElementById('hintOsouji').textContent=getHint('osouji',osoujiCount);
+  const breakdown=[];
+  if(nAmt>0) breakdown.push({label:'通常タイプ '+normalCount+'台',amount:nAmt});
+  if(oAmt>0) breakdown.push({label:'お掃除機能付き '+osoujiCount+'台',amount:oAmt});
+  const koshoCount=acUnits.filter(u=>u.kosho).length;
+  if(koshoCount>0) breakdown.push({label:'高所作業費 ×'+koshoCount,amount:koshoCount*KOSHO_FEE});
+  AC_OPTIONS.forEach(o=>{const q=optQty[o.id]||0;if(q>0&&o.price>0) breakdown.push({label:o.name+' ×'+q,amount:o.price*q});});
+  BATH_ITEMS.forEach(b=>{if(bathSel[b.id]&&b.price>0) breakdown.push({label:b.name,amount:b.price});});
+  HOUSE_ITEMS.forEach(h=>{if(houseSel[h.id]&&h.price>0){const q=houseQty[h.id]||1;breakdown.push({label:h.name+(h.perUnit?' ×'+q:''),amount:h.price*(h.perUnit?q:1)});}});
+  const total=getTotalAmount();
+  document.getElementById('totalAmount').innerHTML='¥'+total.toLocaleString()+'<small>円</small>';
+  let bHtml='';
+  breakdown.forEach(b=>{bHtml+='<div class="bd-row"><span>'+b.label+'</span><span>¥'+b.amount.toLocaleString()+'</span></div>';});
+  if(breakdown.length>0) bHtml+='<div class="bd-sep"></div><div class="bd-row bd-total"><span>合計</span><span>¥'+total.toLocaleString()+'</span></div>';
+  document.getElementById('breakdown').innerHTML=bHtml;
+  updateNextBtn();
+}
+
+function updateNextBtn() {
+  const btn=document.getElementById('nextBtn1');
+  if(btn) btn.disabled=!(normalCount+osoujiCount>0||Object.values(bathSel).some(Boolean)||Object.values(houseSel).some(Boolean));
+}
+
+// ===== ページ遷移 =====
+function goToConfirm() { buildConfirmSummary(); goToPage(2); }
+function goToPage(n) {
+  document.querySelectorAll('.page').forEach((p,i)=>p.classList.toggle('active',i===n-1));
+  for(let i=1;i<=4;i++){
+    const dot=document.getElementById('dot'+i),lbl=document.getElementById('lbl'+i),line=document.getElementById('line'+i);
+    if(i<n){dot.className='step-dot done';lbl.className='step-label done';}
+    else if(i===n){dot.className='step-dot active';lbl.className='step-label active';}
+    else{dot.className='step-dot';lbl.className='step-label';}
+    if(line) line.className='step-line'+(i<n?' done':'');
+  }
+  if(n===3) renderAcInfoSection();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function buildConfirmSummary() {
+  let rows='';
+  if(normalCount>0) rows+='<div class="confirm-row"><span class="confirm-label">通常タイプ</span><span class="confirm-value">'+normalCount+'台 ¥'+calcNormalAmt(normalCount).toLocaleString()+'</span></div>';
+  if(osoujiCount>0) rows+='<div class="confirm-row"><span class="confirm-label">お掃除機能付き</span><span class="confirm-value">'+osoujiCount+'台 ¥'+calcOsoujiAmt(osoujiCount).toLocaleString()+'</span></div>';
+  const kc=acUnits.filter(u=>u.kosho).length;
+  if(kc>0) rows+='<div class="confirm-row"><span class="confirm-label">高所作業費</span><span class="confirm-value">'+kc+'台分 ¥'+(kc*KOSHO_FEE).toLocaleString()+'</span></div>';
+  AC_OPTIONS.forEach(o=>{const q=optQty[o.id]||0;if(q>0) rows+='<div class="confirm-row"><span class="confirm-label">'+o.name+'</span><span class="confirm-value">'+q+'台</span></div>';});
+  BATH_ITEMS.forEach(b=>{if(bathSel[b.id]) rows+='<div class="confirm-row"><span class="confirm-label">'+b.name+'</span><span class="confirm-value">'+( b.price>0?'¥'+b.price.toLocaleString():'お見積もり')+'</span></div>';});
+  HOUSE_ITEMS.forEach(h=>{if(houseSel[h.id]){const q=houseQty[h.id]||1;rows+='<div class="confirm-row"><span class="confirm-label">'+h.name+(h.perUnit?' ×'+q:'')+'</span><span class="confirm-value">'+(h.price>0?'¥'+(h.price*(h.perUnit?q:1)).toLocaleString():'お見積もり')+'</span></div>';}});
+  document.getElementById('confirmSummary').innerHTML=rows;
+  document.getElementById('confirmTotalAmount').innerHTML='¥'+getTotalAmount().toLocaleString()+'<small>円</small>';
+}
+
+// ===== バリデーション =====
+function setErr(id, show, msg) {
+  const el=document.getElementById(id), em=document.getElementById('err_'+id.replace('f_',''));
+  if(el) el.classList.toggle('err', show);
+  if(em){ em.textContent=msg||em.textContent; em.classList.toggle('show', show); }
+}
+function validateForm() {
+  let ok=true;
+  const req=[
+    {id:'f_name',    em:'err_name',    msg:'お名前をご入力ください'},
+    {id:'f_tel',     em:'err_tel',     msg:'電話番号をご入力ください'},
+    {id:'f_email',   em:'err_email',   msg:'メールアドレスをご入力ください'},
+    {id:'f_address', em:'err_address', msg:'ご住所をご入力ください'},
+    {id:'f_date1',   em:'err_date1',   msg:'第1希望日をご入力ください'},
+    {id:'f_time1',   em:'err_time1',   msg:'第1希望の時間帯を選択してください'},
+    {id:'f_date2',   em:'err_date2',   msg:'第2希望日をご入力ください'},
+    {id:'f_time2',   em:'err_time2',   msg:'第2希望の時間帯を選択してください'},
+    {id:'f_date3',   em:'err_date3',   msg:'第3希望日をご入力ください'},
+    {id:'f_time3',   em:'err_time3',   msg:'第3希望の時間帯を選択してください'},
+  ];
+  req.forEach(f=>{
+    const el=document.getElementById(f.id), em=document.getElementById(f.em);
+    const v=el?el.value.trim():'';
+    if(el) el.classList.toggle('err',!v);
+    if(em){ em.classList.toggle('show',!v); }
+    if(!v) ok=false;
+  });
+  // 利用回数
+  const errV=document.getElementById('err_visit');
+  if(!radioState['visit']){if(errV) errV.classList.add('show'); ok=false;}
+  else{if(errV) errV.classList.remove('show');}
+  // 2回目以上の媒体
+  if(radioState['visit']==='repeat' && !radioState['media']){
+    const em=document.getElementById('err_media'); if(em) em.classList.add('show'); ok=false;
+  } else { const em=document.getElementById('err_media'); if(em) em.classList.remove('show'); }
+  // 駐車場
+  const errP=document.getElementById('err_parking');
+  if(!radioState['parking']){if(errP) errP.classList.add('show'); ok=false;}
+  else{if(errP) errP.classList.remove('show');}
+  return ok;
+}
+
+// ===== 送信 =====
+function submitBooking() {
+  if(!validateForm()){ window.scrollTo({top:0,behavior:'smooth'}); return; }
+  const total=getTotalAmount();
+  const tmap={'8-9':'8〜9時着','12-15':'12〜15時着','15-18':'15〜18時着','':'希望なし'};
+  const pmap={cash:'現金',card:'クレジットカード',paypay:'PayPay'};
+  const mmap={yourmeister:'ユアマイスター',kurashi:'くらしのマーケット',mitsumoa:'ミツモア',ouchini:'おうちにプロ',other:'その他'};
+  const acUnitInfo=acUnits.map((u,i)=>({
+    no:i+1,type:u.type==='normal'?'通常':'お掃除機能付き',
+    location:u.location||'',model:u.model||'',year:u.year||'',kosho:u.kosho
+  }));
+  const parkingMap = {yes:'駐車スペースあり',swap:'自家用車と入れ替え可',paid:'近隣有料駐車場あり',none:'なし・不明'};
+  const payload={
+    name:document.getElementById('f_name').value.trim(),
+    tel:document.getElementById('f_tel').value.trim(),
+    email:document.getElementById('f_email').value.trim(),
+    address:document.getElementById('f_address').value.trim(),
+    building:document.getElementById('f_building').value.trim(),
+    date1:document.getElementById('f_date1').value, time1:tmap[document.getElementById('f_time1').value]||'',
+    date2:document.getElementById('f_date2').value, time2:tmap[document.getElementById('f_time2').value]||'',
+    date3:document.getElementById('f_date3').value, time3:tmap[document.getElementById('f_time3').value]||'',
+    acUnits:acUnitInfo,
+    acOptions:AC_OPTIONS.filter(o=>(optQty[o.id]||0)>0).map(o=>o.name+'×'+optQty[o.id]).join('、')||'なし',
+    bathItems:BATH_ITEMS.filter(b=>bathSel[b.id]).map(b=>b.name).join('、')||'なし',
+    houseItems:HOUSE_ITEMS.filter(h=>houseSel[h.id]).map(h=>h.name+(h.perUnit?'×'+(houseQty[h.id]||1):'')).join('、')||'なし',
+    payment:pmap[radioState['payment']||'']||'',
+    parking:parkingMap[radioState['parking']||'']||'',
+    visitCount:radioState['visit']==='first'?'はじめて':'2回目以上',
+    prevMedia:radioState['visit']==='repeat'?(mmap[radioState['media']||'']||''):'-',
+    note:document.getElementById('f_note').value.trim(),
+    estimate:total, submitted:new Date().toLocaleString('ja-JP'), action:'booking'
+  };
+  const btn=document.querySelector('.submit-btn');
+  btn.disabled=true; btn.textContent='送信中…';
+  if(BOOKING_API_URL==='YOUR_BOOKING_API_URL_HERE'){ setTimeout(()=>showComplete(payload),800); return; }
+  fetch(BOOKING_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+    .then(r=>r.json()).then(()=>showComplete(payload)).catch(()=>showComplete(payload));
+}
+
+function showComplete(d) {
+  let rows=`<div class="confirm-row"><span class="confirm-label">お名前</span><span class="confirm-value">${d.name} 様</span></div>
+    <div class="confirm-row"><span class="confirm-label">電話番号</span><span class="confirm-value">${d.tel}</span></div>
+    <div class="confirm-row"><span class="confirm-label">ご住所</span><span class="confirm-value">${d.address}${d.building?' '+d.building:''}</span></div>`;
+  if(d.acUnits && d.acUnits.length>0) {
+    const acSummary=d.acUnits.map(u=>u.type+(u.location?' ('+u.location+')':'')).join('、');
+    rows+=`<div class="confirm-row"><span class="confirm-label">エアコン</span><span class="confirm-value">${acSummary}</span></div>`;
+  }
+  if(d.bathItems!=='なし') rows+=`<div class="confirm-row"><span class="confirm-label">浴室</span><span class="confirm-value">${d.bathItems}</span></div>`;
+  if(d.houseItems!=='なし') rows+=`<div class="confirm-row"><span class="confirm-label">ハウス</span><span class="confirm-value">${d.houseItems}</span></div>`;
+  rows+=`<div class="confirm-row"><span class="confirm-label">第1希望</span><span class="confirm-value">${d.date1} ${d.time1}</span></div>
+    <div class="confirm-row"><span class="confirm-label">第2希望</span><span class="confirm-value">${d.date2} ${d.time2}</span></div>
+    <div class="confirm-row"><span class="confirm-label">第3希望</span><span class="confirm-value">${d.date3} ${d.time3}</span></div>`;
+  if(d.payment) rows+=`<div class="confirm-row"><span class="confirm-label">お支払い</span><span class="confirm-value">${d.payment}</span></div>`;
+  rows+=`<div class="confirm-row"><span class="confirm-label">概算金額</span><span class="confirm-value" style="color:var(--rose-dark);font-size:16px;">¥${d.estimate.toLocaleString()}</span></div>`;
+  document.getElementById('completeSummary').innerHTML=rows;
+  goToPage(4);
+}
+
+// ===== リスタート =====
+function restartAll() {
+  normalCount=0; osoujiCount=0; optQty={}; bathSel={}; houseSel={}; houseQty={}; acUnits=[];
+  Object.keys(radioState).forEach(k=>delete radioState[k]);
+  document.getElementById('countNormal').textContent=0;
+  document.getElementById('countOsouji').textContent=0;
+  document.getElementById('hintNormal').textContent='';
+  document.getElementById('hintOsouji').textContent='';
+  document.getElementById('acInfoSection').innerHTML='';
+  ['f_name','f_tel','f_email','f_address','f_building','f_date1','f_date2','f_date3','f_note'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['f_time1','f_time2','f_time3'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.querySelectorAll('.radio-dot').forEach(el=>el.classList.remove('chk'));
+  document.querySelectorAll('.radio-row').forEach(el=>el.classList.remove('sel'));
+  toggleMedia(false);  const btn=document.querySelector('.submit-btn');
+  if(btn){btn.disabled=false;btn.innerHTML='🌸 予約リクエストを送信する';}
+  switchTab('ac');
+  renderAcOptions(); renderBathList(); renderHouseList(); calc();
+  goToPage(1);
+}
+</script>
+</body>
+</html>
