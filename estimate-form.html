@@ -200,24 +200,36 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--cream);color:var(--t
   <div class="svc-panel active" id="panel-ac">
     <div class="card">
       <div class="card-title"><span>❄️</span>台数を選んでください</div>
-      <div class="counter-wrap">
-        <div><div class="counter-label-main">🌬️ 通常タイプ</div><div class="counter-label-sub" id="hintNormal"></div></div>
+
+      <!-- 合計台数 -->
+      <div class="counter-wrap" style="margin-bottom:10px;">
+        <div>
+          <div class="counter-label-main">❄️ エアコン 合計台数</div>
+          <div class="counter-label-sub" id="hintTotal"></div>
+        </div>
         <div class="counter-ctrl">
-          <button class="c-btn" onclick="changeCount('normal',-1)">－</button>
-          <div class="c-val" id="countNormal">0</div>
-          <button class="c-btn" onclick="changeCount('normal',1)">＋</button>
+          <button class="c-btn" onclick="changeCount('total',-1)">－</button>
+          <div class="c-val" id="countTotal">0</div>
+          <button class="c-btn" onclick="changeCount('total',1)">＋</button>
         </div>
       </div>
-      <div class="counter-wrap" style="margin-bottom:0;">
-        <div><div class="counter-label-main">✨ お掃除機能付き</div><div class="counter-label-sub" id="hintOsouji"></div></div>
-        <div class="counter-ctrl">
-          <button class="c-btn" onclick="changeCount('osouji',-1)">－</button>
-          <div class="c-val" id="countOsouji">0</div>
-          <button class="c-btn" onclick="changeCount('osouji',1)">＋</button>
+
+      <!-- お掃除台数（合計台数が1以上のとき表示） -->
+      <div id="osoujiWrap" style="display:none;">
+        <div class="counter-wrap" style="margin-bottom:0;">
+          <div>
+            <div class="counter-label-main">✨ うちお掃除機能付きは？</div>
+            <div class="counter-label-sub" id="hintOsouji"></div>
+          </div>
+          <div class="counter-ctrl">
+            <button class="c-btn" onclick="changeCount('osouji',-1)">－</button>
+            <div class="c-val" id="countOsouji">0</div>
+            <button class="c-btn" onclick="changeCount('osouji',1)">＋</button>
+          </div>
         </div>
-      </div>
-      <div style="margin-top:12px;font-size:11px;color:var(--text-soft);text-align:center;line-height:1.7;background:var(--rose-pale);border-radius:10px;padding:8px;">
-        ※ 両方ある場合はそれぞれ入力してください ／ 5台以上は単価計算
+        <div style="margin-top:8px;font-size:11px;color:var(--text-soft);text-align:center;line-height:1.6;background:var(--rose-pale);border-radius:10px;padding:8px;">
+          ※ お掃除機能付きは通常料金に＋¥6,000/台
+        </div>
       </div>
     </div>
     <div class="card">
@@ -446,9 +458,11 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--cream);color:var(--t
 const BOOKING_API_URL = 'https://script.google.com/macros/s/AKfycbwSRLDkk3nOR9vHQb90WlQv-vt28zdVk_YUKsLHbxkOiPJpd7Man_rNC8jd5Q0NvxMQ/exec';
 
 // ===== エアコン状態 =====
-let normalCount = 0, osoujiCount = 0, optQty = {}, priceData = null;
+let totalCount = 0, osoujiCount = 0, optQty = {}, priceData = null;
+// 後方互換用
+Object.defineProperty(window, 'normalCount', { get: () => totalCount - osoujiCount });
 
-// ===== 料金変数（スプレッドシートから上書きされる／失敗時はここの値を使用） =====
+// ===== 料金変数 =====
 let NORMAL_UNIT  = [7900,7600,7300,7100];
 let NORMAL_5PLUS = 6900;
 let OSOUJI_EXTRA = 6000;
@@ -583,42 +597,55 @@ function loadPriceData() {
 }
 
 // ===== 料金計算 =====
-function calcNormalAmt(n) {
+function getUnitPrice(n) {
+  // 合計台数に応じた通常単価
   if(n<=0) return 0;
-  if(n<=4) return NORMAL_UNIT[n-1]*n;
-  // 5台以降：全台数 × 5台以降単価
-  return NORMAL_5PLUS * n;
+  return n<=4 ? NORMAL_UNIT[n-1] : NORMAL_5PLUS;
 }
-function calcOsoujiAmt(n) {
-  if(n<=0) return 0;
-  if(n<=4) return (NORMAL_UNIT[n-1]+OSOUJI_EXTRA)*n;
-  // 5台以降：全台数 × (5台以降単価 + お掃除上乗せ額)
-  return (NORMAL_5PLUS + OSOUJI_EXTRA) * n;
+function calcAcAmt(total, osouji) {
+  if(total<=0) return 0;
+  const unit = getUnitPrice(total);
+  const normalN = total - osouji;
+  return unit * normalN + (unit + OSOUJI_EXTRA) * osouji;
 }
-function getHint(type, n) {
-  if(n<=0) return '';
-  const total = type==='normal' ? calcNormalAmt(n) : calcOsoujiAmt(n);
-  const unit = Math.round(total / n);
-  return n+'台 → ¥'+total.toLocaleString()+'（1台あたり¥'+unit.toLocaleString()+'）';
+
+function getHintTotal(total, osouji) {
+  if(total<=0) return '';
+  const unit = getUnitPrice(total);
+  const normalN = total - osouji;
+  const amt = calcAcAmt(total, osouji);
+  let lines = [];
+  if(normalN > 0) lines.push('通常'+normalN+'台：¥'+unit.toLocaleString()+' × '+normalN+'台');
+  if(osouji  > 0) lines.push('お掃除'+osouji+'台：¥'+(unit+OSOUJI_EXTRA).toLocaleString()+' × '+osouji+'台');
+  lines.push('合計 ¥'+amt.toLocaleString());
+  return lines.join('　/　');
 }
 
 // ===== カウンター =====
 function changeCount(type, delta) {
-  if(type==='normal') { normalCount=Math.max(0,Math.min(10,normalCount+delta)); document.getElementById('countNormal').textContent=normalCount; }
-  else { osoujiCount=Math.max(0,Math.min(10,osoujiCount+delta)); document.getElementById('countOsouji').textContent=osoujiCount; }
+  if(type==='total') {
+    totalCount = Math.max(0, Math.min(10, totalCount+delta));
+    document.getElementById('countTotal').textContent = totalCount;
+    if(osoujiCount > totalCount) {
+      osoujiCount = totalCount;
+      document.getElementById('countOsouji').textContent = osoujiCount;
+    }
+    document.getElementById('osoujiWrap').style.display = totalCount>0 ? 'block' : 'none';
+  } else {
+    osoujiCount = Math.max(0, Math.min(totalCount, osoujiCount+delta));
+    document.getElementById('countOsouji').textContent = osoujiCount;
+  }
   rebuildAcUnits();
   calc(); updateNextBtn();
 }
 
 // ===== エアコン台別情報 再構築 =====
 function rebuildAcUnits() {
-  const total = normalCount + osoujiCount;
-  // 既存情報を保持しながら増減
-  while(acUnits.length < total) acUnits.push({model:'',year:'',location:'',kosho:false});
-  acUnits = acUnits.slice(0, total);
-  // typeを付け直す
-  for(let i=0;i<normalCount;i++) acUnits[i].type='normal';
-  for(let i=0;i<osoujiCount;i++) acUnits[normalCount+i].type='osouji';
+  while(acUnits.length < totalCount) acUnits.push({model:'',year:'',location:'',kosho:false});
+  acUnits = acUnits.slice(0, totalCount);
+  const normalN = totalCount - osoujiCount;
+  for(let i=0;i<normalN;i++) acUnits[i].type='normal';
+  for(let i=0;i<osoujiCount;i++) acUnits[normalN+i].type='osouji';
   renderAcInfoSection();
 }
 
@@ -765,27 +792,36 @@ function renderHouseList() {
 
 // ===== 合計計算 =====
 function getTotalAmount() {
-  const nAmt=calcNormalAmt(normalCount), oAmt=calcOsoujiAmt(osoujiCount);
-  const optAmt=AC_OPTIONS.reduce((s,o)=>{const q=optQty[o.id]||0;return s+(q>0&&o.price>0?o.price*q:0);},0);
-  const koshoAmt=acUnits.filter(u=>u.kosho).length*KOSHO_FEE;
-  const bathAmt=BATH_ITEMS.reduce((s,b)=>s+(bathSel[b.id]?b.price:0),0);
-  const houseAmt=HOUSE_ITEMS.reduce((s,h)=>{if(!houseSel[h.id])return s;const q=houseQty[h.id]||1;return s+h.price*(h.perUnit?q:1);},0);
-  return nAmt+oAmt+optAmt+koshoAmt+bathAmt+houseAmt;
+  const acAmt = calcAcAmt(totalCount, osoujiCount);
+  const optAmt = AC_OPTIONS.reduce((s,o)=>{const q=optQty[o.id]||0;return s+(q>0&&o.price>0?o.price*q:0);},0);
+  const koshoAmt = acUnits.filter(u=>u.kosho).length * KOSHO_FEE;
+  const bathAmt = BATH_ITEMS.reduce((s,b)=>s+(bathSel[b.id]?b.price:0),0);
+  const houseAmt = HOUSE_ITEMS.reduce((s,h)=>{if(!houseSel[h.id])return s;const q=houseQty[h.id]||1;return s+h.price*(h.perUnit?q:1);},0);
+  return acAmt + optAmt + koshoAmt + bathAmt + houseAmt;
 }
 
 function calc() {
-  const nAmt=calcNormalAmt(normalCount), oAmt=calcOsoujiAmt(osoujiCount);
-  document.getElementById('hintNormal').textContent=getHint('normal',normalCount);
-  document.getElementById('hintOsouji').textContent=getHint('osouji',osoujiCount);
-  const breakdown=[];
-  if(nAmt>0) breakdown.push({label:'通常タイプ '+normalCount+'台',amount:nAmt});
-  if(oAmt>0) breakdown.push({label:'お掃除機能付き '+osoujiCount+'台',amount:oAmt});
-  const koshoCount=acUnits.filter(u=>u.kosho).length;
-  if(koshoCount>0) breakdown.push({label:'高所作業費 ×'+koshoCount,amount:koshoCount*KOSHO_FEE});
-  AC_OPTIONS.forEach(o=>{const q=optQty[o.id]||0;if(q>0&&o.price>0) breakdown.push({label:o.name+' ×'+q,amount:o.price*q});});
-  BATH_ITEMS.forEach(b=>{if(bathSel[b.id]&&b.price>0) breakdown.push({label:b.name,amount:b.price});});
-  HOUSE_ITEMS.forEach(h=>{if(houseSel[h.id]&&h.price>0){const q=houseQty[h.id]||1;breakdown.push({label:h.name+(h.perUnit?' ×'+q:''),amount:h.price*(h.perUnit?q:1)});}});
-  const total=getTotalAmount();
+  const unit = getUnitPrice(totalCount);
+  const normalN = totalCount - osoujiCount;
+  const acAmt = calcAcAmt(totalCount, osoujiCount);
+
+  // ヒント更新
+  const hintEl = document.getElementById('hintTotal');
+  if(hintEl) hintEl.textContent = getHintTotal(totalCount, osoujiCount);
+  const hintO = document.getElementById('hintOsouji');
+  if(hintO) hintO.textContent = osoujiCount>0 ? '＋¥'+OSOUJI_EXTRA.toLocaleString()+'/台' : '';
+
+  const breakdown = [];
+  if(normalN > 0) breakdown.push({label:'通常タイプ '+normalN+'台　¥'+unit.toLocaleString()+'×'+normalN, amount:unit*normalN});
+  if(osoujiCount > 0) breakdown.push({label:'お掃除機能付き '+osoujiCount+'台　¥'+(unit+OSOUJI_EXTRA).toLocaleString()+'×'+osoujiCount, amount:(unit+OSOUJI_EXTRA)*osoujiCount});
+
+  const koshoCount = acUnits.filter(u=>u.kosho).length;
+  if(koshoCount>0) breakdown.push({label:'高所作業費 ×'+koshoCount, amount:koshoCount*KOSHO_FEE});
+  AC_OPTIONS.forEach(o=>{const q=optQty[o.id]||0;if(q>0&&o.price>0) breakdown.push({label:o.name+' ×'+q, amount:o.price*q});});
+  BATH_ITEMS.forEach(b=>{if(bathSel[b.id]&&b.price>0) breakdown.push({label:b.name, amount:b.price});});
+  HOUSE_ITEMS.forEach(h=>{if(houseSel[h.id]&&h.price>0){const q=houseQty[h.id]||1;breakdown.push({label:h.name+(h.perUnit?' ×'+q:''), amount:h.price*(h.perUnit?q:1)});}});
+
+  const total = getTotalAmount();
   document.getElementById('totalAmount').innerHTML='¥'+total.toLocaleString()+'<small>円</small>';
   let bHtml='';
   breakdown.forEach(b=>{bHtml+='<div class="bd-row"><span>'+b.label+'</span><span>¥'+b.amount.toLocaleString()+'</span></div>';});
@@ -796,7 +832,7 @@ function calc() {
 
 function updateNextBtn() {
   const btn=document.getElementById('nextBtn1');
-  if(btn) btn.disabled=!(normalCount+osoujiCount>0||Object.values(bathSel).some(Boolean)||Object.values(houseSel).some(Boolean));
+  if(btn) btn.disabled=!(totalCount>0||Object.values(bathSel).some(Boolean)||Object.values(houseSel).some(Boolean));
 }
 
 // ===== ページ遷移 =====
@@ -815,13 +851,15 @@ function goToPage(n) {
 }
 
 function buildConfirmSummary() {
+  const unit = getUnitPrice(totalCount);
+  const normalN = totalCount - osoujiCount;
   let rows='';
-  if(normalCount>0) rows+='<div class="confirm-row"><span class="confirm-label">通常タイプ</span><span class="confirm-value">'+normalCount+'台 ¥'+calcNormalAmt(normalCount).toLocaleString()+'</span></div>';
-  if(osoujiCount>0) rows+='<div class="confirm-row"><span class="confirm-label">お掃除機能付き</span><span class="confirm-value">'+osoujiCount+'台 ¥'+calcOsoujiAmt(osoujiCount).toLocaleString()+'</span></div>';
+  if(normalN>0)     rows+='<div class="confirm-row"><span class="confirm-label">通常タイプ</span><span class="confirm-value">'+normalN+'台 ¥'+(unit*normalN).toLocaleString()+'</span></div>';
+  if(osoujiCount>0) rows+='<div class="confirm-row"><span class="confirm-label">お掃除機能付き</span><span class="confirm-value">'+osoujiCount+'台 ¥'+((unit+OSOUJI_EXTRA)*osoujiCount).toLocaleString()+'</span></div>';
   const kc=acUnits.filter(u=>u.kosho).length;
   if(kc>0) rows+='<div class="confirm-row"><span class="confirm-label">高所作業費</span><span class="confirm-value">'+kc+'台分 ¥'+(kc*KOSHO_FEE).toLocaleString()+'</span></div>';
   AC_OPTIONS.forEach(o=>{const q=optQty[o.id]||0;if(q>0) rows+='<div class="confirm-row"><span class="confirm-label">'+o.name+'</span><span class="confirm-value">'+q+'台</span></div>';});
-  BATH_ITEMS.forEach(b=>{if(bathSel[b.id]) rows+='<div class="confirm-row"><span class="confirm-label">'+b.name+'</span><span class="confirm-value">'+( b.price>0?'¥'+b.price.toLocaleString():'お見積もり')+'</span></div>';});
+  BATH_ITEMS.forEach(b=>{if(bathSel[b.id]) rows+='<div class="confirm-row"><span class="confirm-label">'+b.name+'</span><span class="confirm-value">'+(b.price>0?'¥'+b.price.toLocaleString():'お見積もり')+'</span></div>';});
   HOUSE_ITEMS.forEach(h=>{if(houseSel[h.id]){const q=houseQty[h.id]||1;rows+='<div class="confirm-row"><span class="confirm-label">'+h.name+(h.perUnit?' ×'+q:'')+'</span><span class="confirm-value">'+(h.price>0?'¥'+(h.price*(h.perUnit?q:1)).toLocaleString():'お見積もり')+'</span></div>';}});
   document.getElementById('confirmSummary').innerHTML=rows;
   document.getElementById('confirmTotalAmount').innerHTML='¥'+getTotalAmount().toLocaleString()+'<small>円</small>';
@@ -899,6 +937,8 @@ function submitBooking() {
     visitCount:radioState['visit']==='first'?'はじめて':'2回目以上',
     prevMedia:radioState['visit']==='repeat'?(mmap[radioState['media']||'']||''):'-',
     note:document.getElementById('f_note').value.trim(),
+    normalCount: totalCount - osoujiCount,
+    osoujiCount: osoujiCount,
     estimate:total, submitted:new Date().toLocaleString('ja-JP'), action:'booking'
   };
   const btn=document.querySelector('.submit-btn');
@@ -929,12 +969,13 @@ function showComplete(d) {
 
 // ===== リスタート =====
 function restartAll() {
-  normalCount=0; osoujiCount=0; optQty={}; bathSel={}; houseSel={}; houseQty={}; acUnits=[];
+  totalCount=0; osoujiCount=0; optQty={}; bathSel={}; houseSel={}; houseQty={}; acUnits=[];
   Object.keys(radioState).forEach(k=>delete radioState[k]);
-  document.getElementById('countNormal').textContent=0;
+  document.getElementById('countTotal').textContent=0;
   document.getElementById('countOsouji').textContent=0;
-  document.getElementById('hintNormal').textContent='';
+  document.getElementById('hintTotal').textContent='';
   document.getElementById('hintOsouji').textContent='';
+  document.getElementById('osoujiWrap').style.display='none';
   document.getElementById('acInfoSection').innerHTML='';
   ['f_name','f_tel','f_email','f_address','f_building','f_date1','f_date2','f_date3','f_note'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['f_time1','f_time2','f_time3'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
