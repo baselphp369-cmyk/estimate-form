@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>エアコンクリーニング お見積もり・ご予約 | クリーニングBASE</title>
+<title>エアコンクリーニング お見積もり・ご予約 | 町のエアコンお掃除専門店 ＋α</title>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -305,9 +305,27 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--cream);color:var(--t
       <div class="form-hint">⚠️ docomo（@docomo.ne.jp）・au（@ezweb.ne.jp）・softbank（@softbank.ne.jp）等のキャリアメールは届かない場合があります。GmailやYahooメール等の使用を推奨します。<br>📧 予約確定メールへは24時間以内にご返信ください。</div>
     </div>
     <div class="form-group">
+      <label class="form-label">郵便番号<span class="req">必須</span></label>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="tel" class="form-input" id="f_zip" placeholder="1234567" maxlength="8"
+          style="flex:1;" oninput="formatZip(this)" onblur="lookupAddress()">
+        <button type="button" onclick="lookupAddress()"
+          style="padding:13px 14px;border-radius:var(--radius-sm);border:2px solid var(--rose);background:white;color:var(--rose-dark);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">
+          住所検索
+        </button>
+      </div>
+      <div class="form-hint">ハイフンなしでも入力できます（例：5750022）</div>
+      <div class="errmsg" id="err_zip">郵便番号をご入力ください</div>
+    </div>
+    <div class="form-group">
       <label class="form-label">ご住所<span class="req">必須</span></label>
-      <input type="text" class="form-input" id="f_address" placeholder="神奈川県横浜市○○区○○町1-2-3">
+      <input type="text" class="form-input" id="f_address" placeholder="都道府県・市区町村は自動入力されます">
       <div class="errmsg" id="err_address">ご住所をご入力ください</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">番地・号<span class="req">必須</span></label>
+      <input type="text" class="form-input" id="f_banchi" placeholder="例：4-11-1">
+      <div class="errmsg" id="err_banchi">番地をご入力ください</div>
     </div>
     <div class="form-group" style="margin-bottom:0;">
       <label class="form-label">建物名・部屋番号</label>
@@ -442,7 +460,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--cream);color:var(--t
   <div class="complete-wrap">
     <span class="complete-icon">🎉</span>
     <div class="complete-title">予約リクエスト完了！</div>
-    <div class="complete-sub">ご予約ありがとうございます✨<br>担当スタッフより1〜2営業日以内に<br>お電話またはLINEにてご連絡します。<br><br>お気軽にお待ちください🌸</div>
+    <div class="complete-sub">ご予約ありがとうございます✨<br>ご登録いただいたメールアドレスへ<br>担当スタッフよりご連絡いたします。<br><br>📧 メールが届きましたら<br>24時間以内にご返信ください🌸</div>
     <div class="complete-box">
       <div class="complete-box-title">📋 ご予約内容</div>
       <div id="completeSummary"></div>
@@ -865,6 +883,31 @@ function buildConfirmSummary() {
   document.getElementById('confirmTotalAmount').innerHTML='¥'+getTotalAmount().toLocaleString()+'<small>円</small>';
 }
 
+// ===== 郵便番号検索 =====
+function formatZip(el) {
+  // 数字とハイフンだけ残す
+  let v = el.value.replace(/[^\d]/g,'');
+  if(v.length > 7) v = v.slice(0,7);
+  el.value = v;
+}
+function lookupAddress() {
+  const zip = document.getElementById('f_zip').value.replace(/[^\d]/g,'');
+  if(zip.length !== 7) return;
+  fetch('https://zipcloud.ibsnet.co.jp/api/search?zipcode='+zip)
+    .then(r=>r.json())
+    .then(j=>{
+      if(j.results && j.results.length>0) {
+        const r = j.results[0];
+        const addr = r.address1 + r.address2 + r.address3;
+        document.getElementById('f_address').value = addr;
+        document.getElementById('f_banchi').focus();
+      } else {
+        alert('住所が見つかりませんでした。郵便番号を確認してください。');
+      }
+    })
+    .catch(()=>{ alert('住所検索に失敗しました。手動で入力してください。'); });
+}
+
 // ===== バリデーション =====
 function setErr(id, show, msg) {
   const el=document.getElementById(id), em=document.getElementById('err_'+id.replace('f_',''));
@@ -877,7 +920,9 @@ function validateForm() {
     {id:'f_name',    em:'err_name',    msg:'お名前をご入力ください'},
     {id:'f_tel',     em:'err_tel',     msg:'電話番号をご入力ください'},
     {id:'f_email',   em:'err_email',   msg:'メールアドレスをご入力ください'},
+    {id:'f_zip',     em:'err_zip',     msg:'郵便番号をご入力ください'},
     {id:'f_address', em:'err_address', msg:'ご住所をご入力ください'},
+    {id:'f_banchi',  em:'err_banchi',  msg:'番地をご入力ください'},
     {id:'f_date1',   em:'err_date1',   msg:'第1希望日をご入力ください'},
     {id:'f_time1',   em:'err_time1',   msg:'第1希望の時間帯を選択してください'},
     {id:'f_date2',   em:'err_date2',   msg:'第2希望日をご入力ください'},
@@ -923,7 +968,8 @@ function submitBooking() {
     name:document.getElementById('f_name').value.trim(),
     tel:document.getElementById('f_tel').value.trim(),
     email:document.getElementById('f_email').value.trim(),
-    address:document.getElementById('f_address').value.trim(),
+    zip:document.getElementById('f_zip').value.trim(),
+    address:document.getElementById('f_address').value.trim()+' '+document.getElementById('f_banchi').value.trim(),
     building:document.getElementById('f_building').value.trim(),
     date1:document.getElementById('f_date1').value, time1:tmap[document.getElementById('f_time1').value]||'',
     date2:document.getElementById('f_date2').value, time2:tmap[document.getElementById('f_time2').value]||'',
@@ -977,7 +1023,7 @@ function restartAll() {
   document.getElementById('hintOsouji').textContent='';
   document.getElementById('osoujiWrap').style.display='none';
   document.getElementById('acInfoSection').innerHTML='';
-  ['f_name','f_tel','f_email','f_address','f_building','f_date1','f_date2','f_date3','f_note'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['f_name','f_tel','f_email','f_zip','f_address','f_banchi','f_building','f_date1','f_date2','f_date3','f_note'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['f_time1','f_time2','f_time3'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.querySelectorAll('.radio-dot').forEach(el=>el.classList.remove('chk'));
   document.querySelectorAll('.radio-row').forEach(el=>el.classList.remove('sel'));
