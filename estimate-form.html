@@ -990,8 +990,12 @@ function submitBooking() {
   const btn=document.querySelector('.submit-btn');
   btn.disabled=true; btn.textContent='送信中…';
   if(BOOKING_API_URL==='YOUR_BOOKING_API_URL_HERE'){ setTimeout(()=>showComplete(payload),800); return; }
-  fetch(BOOKING_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
-    .then(r=>r.json()).then(()=>showComplete(payload)).catch(()=>showComplete(payload));
+  fetch(BOOKING_API_URL, {
+    method:'POST',
+    mode:'no-cors',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(payload)
+  }).then(()=>showComplete(payload)).catch(()=>showComplete(payload));
 }
 
 function showComplete(d) {
