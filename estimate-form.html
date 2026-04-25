@@ -544,7 +544,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 function setMinDate() {
-  const d = new Date(); d.setDate(d.getDate()+7);
+  const d = new Date(); d.setDate(d.getDate()+5);
   const min = d.toISOString().slice(0,10);
   ['f_date1','f_date2','f_date3'].forEach(id => { const el=document.getElementById(id); if(el) el.min=min; });
 }
