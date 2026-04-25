@@ -508,9 +508,9 @@ const BATH_ITEMS = [
   {id:'b_kyutou',  name:'給湯器分解洗浄',      price:15000, note:'※大阪のみ'},
   {id:'b_jet',     name:'ジェットバス分解洗浄', price:39800, note:'※大阪のみ'},
   {id:'b_yokusoura',name:'浴槽裏洗浄',         price:5000},
-  {id:'b_cleaning',name:'浴室クリーニング',     price:16800, note:'16,800円〜 大阪・兵庫一部'},
-  {id:'b_kanki2',  name:'浴室多機能換気扇',     price:10000, note:'大阪・兵庫一部'},
-  {id:'b_kanki1',  name:'浴室換気扇',           price:5000},
+  {id:'b_cleaning',name:'浴室クリーニング',     price:16800, note:'16,800円〜 大阪・兵庫一部', showTilde:true},
+  {id:'b_kanki2',  name:'浴室多機能換気扇',     price:10000, note:'大阪・兵庫一部', showTilde:true},
+  {id:'b_kanki1',  name:'浴室換気扇',           price:5000, showTilde:true},
 ];
 let bathSel = {};
 
@@ -781,7 +781,7 @@ function renderBathList() {
     el.onclick=()=>toggleBath(item.id);
     el.innerHTML=`<div class="house-check">${on?'✓':''}</div>
       <div style="flex:1;"><div style="font-size:13px;font-weight:700;">${item.name}</div>${item.note?'<div class="house-note">'+item.note+'</div>':''}</div>
-      <div class="house-price">${item.price>0?'¥'+item.price.toLocaleString():'お見積もり'}</div>`;
+      <div class="house-price">${item.price>0?(item.showTilde?'¥'+item.price.toLocaleString()+'〜':'¥'+item.price.toLocaleString()):'お見積もり'}</div>`;
     list.appendChild(el);
   });
 }
