@@ -883,6 +883,10 @@ function buildConfirmSummary() {
   document.getElementById('confirmTotalAmount').innerHTML='¥'+getTotalAmount().toLocaleString()+'<small>円</small>';
 }
 
+function calcAcTotal() {
+  return calcAcAmt(totalCount, osoujiCount) + acUnits.filter(u=>u.kosho).length * KOSHO_FEE;
+}
+
 // ===== 郵便番号検索 =====
 function formatZip(el) {
   // 数字とハイフンだけ残す
@@ -964,6 +968,11 @@ function submitBooking() {
     location:u.location||'',model:u.model||'',year:u.year||'',kosho:u.kosho
   }));
   const parkingMap = {yes:'駐車スペースあり',swap:'自家用車と入れ替え可',paid:'近隣有料駐車場あり',none:'なし・不明'};
+  const acEstimate = calcAcTotal();
+  const optEstimate = AC_OPTIONS.reduce((s,o)=>{const q=optQty[o.id]||0;return s+(q>0&&o.price>0?o.price*q:0);},0);
+  const bathEstimate = BATH_ITEMS.reduce((s,b)=>s+(bathSel[b.id]?b.price:0),0);
+  const houseEstimate = HOUSE_ITEMS.reduce((s,h)=>{if(!houseSel[h.id])return s;const q=houseQty[h.id]||1;return s+h.price*(h.perUnit?q:1);},0);
+  const koshoEstimate = acUnits.filter(u=>u.kosho).length * KOSHO_FEE;
   const payload={
     name:document.getElementById('f_name').value.trim(),
     tel:document.getElementById('f_tel').value.trim(),
@@ -983,6 +992,7 @@ function submitBooking() {
     visitCount:radioState['visit']==='first'?'はじめて':'2回目以上',
     prevMedia:radioState['visit']==='repeat'?(mmap[radioState['media']||'']||''):'-',
     note:document.getElementById('f_note').value.trim(),
+    acEstimate, optEstimate, bathEstimate, houseEstimate, koshoEstimate,
     normalCount: totalCount - osoujiCount,
     osoujiCount: osoujiCount,
     estimate:total, submitted:new Date().toLocaleString('ja-JP'), action:'booking'
