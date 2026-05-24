@@ -1352,12 +1352,15 @@ function submitBooking() {
   const btn=document.querySelector('.submit-btn');
   btn.disabled=true; btn.textContent='送信中…';
   if(BOOKING_API_URL==='YOUR_BOOKING_API_URL_HERE'){ setTimeout(()=>showComplete(payload),800); return; }
+  // 3秒後に強制的に完了画面へ（no-corsでレスポンスが読めない場合の保険）
+  const timer = setTimeout(()=>showComplete(payload), 3000);
   fetch(BOOKING_API_URL, {
     method:'POST',
     mode:'no-cors',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify(payload)
-  }).then(()=>showComplete(payload)).catch(()=>showComplete(payload));
+  }).then(()=>{ clearTimeout(timer); showComplete(payload); })
+    .catch(()=>{ clearTimeout(timer); showComplete(payload); });
 }
 
 function showComplete(d) {
