@@ -154,6 +154,19 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--cream);color:var(--t
 .complete-box-title{font-size:12px;font-weight:700;color:var(--rose-dark);margin-bottom:10px;font-family:'Zen Maru Gothic',sans-serif;}
 .restart-btn{width:100%;padding:14px;border-radius:var(--radius-sm);border:2px solid var(--rose);background:white;color:var(--rose-dark);font-size:14px;font-weight:700;font-family:'Zen Maru Gothic',sans-serif;cursor:pointer;}
 
+/* 日程ラジオ */
+.date-radio-group{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+.date-radio-row{display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--rose-pale);border-radius:var(--radius-sm);border:1.5px solid transparent;cursor:pointer;transition:all .15s;font-size:13px;font-weight:700;}
+.date-radio-row.sel{border-color:var(--rose);background:#fff0f4;}
+
+/* 曜日ボタン */
+.dow-btn{width:36px;height:36px;border-radius:50%;border:2px solid var(--border);background:white;font-size:13px;font-weight:700;color:var(--text-soft);cursor:pointer;transition:all .15s;}
+.dow-btn.active{border-color:var(--rose);background:var(--rose);color:white;}
+.dow-btn.sun{color:#e55;border-color:#fca5a5;}
+.dow-btn.sun.active{background:#ef4444;border-color:#ef4444;color:white;}
+.dow-btn.sat{color:#3b82f6;border-color:#93c5fd;}
+.dow-btn.sat.active{background:#3b82f6;border-color:#3b82f6;color:white;}
+
 /* LOADING */
 .loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;backdrop-filter:blur(4px);}
 .loading-overlay.hidden{display:none;}
@@ -263,6 +276,15 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--cream);color:var(--t
     <div class="total-tax">税込・出張費込み</div>
     <div class="total-breakdown" id="breakdown"></div>
   </div>
+
+  <!-- 作業時間の目安 -->
+  <div id="workTimeCard" style="display:none;background:white;border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:var(--shadow);border:1.5px solid var(--border);">
+    <div style="font-size:13px;font-weight:700;color:var(--rose-dark);margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+      <span style="font-size:18px;">⏱️</span>作業時間の目安
+    </div>
+    <div id="workTimeContent" style="font-size:13px;line-height:1.9;color:var(--text);"></div>
+    <div style="font-size:11px;color:var(--text-soft);margin-top:8px;line-height:1.6;">※ 汚れの状態や作業環境により前後する場合があります</div>
+  </div>
   <div class="notice-box">💡 こちらは【概算のご参考金額】です。実際の金額は作業前にスタッフがご確認します。追加費用が発生する場合は必ず事前にご説明いたします。</div>
   <button class="next-btn" id="nextBtn1" onclick="goToConfirm()" disabled>この内容で進む →</button>
 </div>
@@ -277,6 +299,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--cream);color:var(--t
     <div class="total-header"><span style="font-size:20px;">💰</span><span style="font-size:13px;font-weight:600;opacity:.9;font-family:'Zen Maru Gothic',sans-serif;">概算お見積もり金額</span></div>
     <div class="total-amount" id="confirmTotalAmount">¥0<small>円</small></div>
     <div class="total-tax">税込・出張費込み</div>
+  </div>
+  <div id="confirmWorkTimeCard" style="display:none;background:white;border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:var(--shadow);border:1.5px solid var(--border);">
+    <div style="font-size:13px;font-weight:700;color:var(--rose-dark);margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+      <span style="font-size:18px;">⏱️</span>作業時間の目安
+    </div>
+    <div id="confirmWorkTimeContent" style="font-size:13px;line-height:1.9;color:var(--text);"></div>
+    <div style="font-size:11px;color:var(--text-soft);margin-top:8px;line-height:1.6;">※ 汚れの状態や作業環境により前後する場合があります</div>
   </div>
   <button class="next-btn" onclick="goToPage(3)">この金額でご予約に進む →</button>
   <button class="back-btn" onclick="goToPage(1)">← 内容を変更する</button>
@@ -357,16 +386,38 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--cream);color:var(--t
   <div class="card">
     <div class="card-title"><span>📅</span>ご希望の日程</div>
     <div class="notice-box">⏰ 時間は【到着時間の目安】です。施工完了時間ではございません</div>
+    <div style="background:#fff0f4;border:2px solid var(--rose);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:700;color:var(--rose-dark);margin-bottom:6px;">⚠️ ご予約日程について</div>
+      <div style="font-size:12px;color:#444;line-height:1.8;">ご予約状況により、ご希望の日程でのご案内が難しい場合がございます。その際は、改めて別日程をご提案させていただきますので、あらかじめご了承ください。</div>
+    </div>
 
+    <!-- 第1希望 -->
     <div class="form-group">
       <label class="form-label">第1希望日<span class="req">必須</span></label>
-      <input type="date" class="form-input" id="f_date1">
+      <div class="date-radio-group" id="drg1">
+        <div class="date-radio-row sel" onclick="selectDateMode(1,'any')"><div class="radio-dot chk" id="dm1_any"></div><span class="radio-label">いつでも</span></div>
+        <div class="date-radio-row" onclick="selectDateMode(1,'dow')"><div class="radio-dot" id="dm1_dow"></div><span class="radio-label">曜日で指定</span></div>
+        <div class="date-radio-row" onclick="selectDateMode(1,'date')"><div class="radio-dot" id="dm1_date"></div><span class="radio-label">日付を指定</span></div>
+      </div>
+      <div id="dow_wrap1" style="display:none;margin:8px 0;">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button type="button" class="dow-btn sun" id="dow1_0" onclick="toggleDowBtn(1,0,'日')">日</button>
+          <button type="button" class="dow-btn" id="dow1_1" onclick="toggleDowBtn(1,1,'月')">月</button>
+          <button type="button" class="dow-btn" id="dow1_2" onclick="toggleDowBtn(1,2,'火')">火</button>
+          <button type="button" class="dow-btn" id="dow1_3" onclick="toggleDowBtn(1,3,'水')">水</button>
+          <button type="button" class="dow-btn" id="dow1_4" onclick="toggleDowBtn(1,4,'木')">木</button>
+          <button type="button" class="dow-btn" id="dow1_5" onclick="toggleDowBtn(1,5,'金')">金</button>
+          <button type="button" class="dow-btn sat" id="dow1_6" onclick="toggleDowBtn(1,6,'土')">土</button>
+        </div>
+      </div>
+      <input type="date" class="form-input" id="f_date1" style="display:none;margin-top:8px;">
       <div class="errmsg" id="err_date1">第1希望日をご入力ください</div>
     </div>
     <div class="form-group">
       <label class="form-label">第1希望 到着時間帯<span class="req">必須</span></label>
       <select class="form-select" id="f_time1">
         <option value="">選択してください</option>
+        <option value="anytime">いつでも</option>
         <option value="8-9">8時〜9時の間に到着</option>
         <option value="12-15">12時〜15時の間に到着</option>
         <option value="15-18">15時〜18時の間に到着</option>
@@ -374,15 +425,33 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--cream);color:var(--t
       <div class="errmsg" id="err_time1">時間帯を選択してください</div>
     </div>
 
+    <!-- 第2希望 -->
     <div class="form-group">
       <label class="form-label">第2希望日<span class="req">必須</span></label>
-      <input type="date" class="form-input" id="f_date2">
+      <div class="date-radio-group" id="drg2">
+        <div class="date-radio-row sel" onclick="selectDateMode(2,'any')"><div class="radio-dot chk" id="dm2_any"></div><span class="radio-label">いつでも</span></div>
+        <div class="date-radio-row" onclick="selectDateMode(2,'dow')"><div class="radio-dot" id="dm2_dow"></div><span class="radio-label">曜日で指定</span></div>
+        <div class="date-radio-row" onclick="selectDateMode(2,'date')"><div class="radio-dot" id="dm2_date"></div><span class="radio-label">日付を指定</span></div>
+      </div>
+      <div id="dow_wrap2" style="display:none;margin:8px 0;">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button type="button" class="dow-btn sun" id="dow2_0" onclick="toggleDowBtn(2,0,'日')">日</button>
+          <button type="button" class="dow-btn" id="dow2_1" onclick="toggleDowBtn(2,1,'月')">月</button>
+          <button type="button" class="dow-btn" id="dow2_2" onclick="toggleDowBtn(2,2,'火')">火</button>
+          <button type="button" class="dow-btn" id="dow2_3" onclick="toggleDowBtn(2,3,'水')">水</button>
+          <button type="button" class="dow-btn" id="dow2_4" onclick="toggleDowBtn(2,4,'木')">木</button>
+          <button type="button" class="dow-btn" id="dow2_5" onclick="toggleDowBtn(2,5,'金')">金</button>
+          <button type="button" class="dow-btn sat" id="dow2_6" onclick="toggleDowBtn(2,6,'土')">土</button>
+        </div>
+      </div>
+      <input type="date" class="form-input" id="f_date2" style="display:none;margin-top:8px;">
       <div class="errmsg" id="err_date2">第2希望日をご入力ください</div>
     </div>
     <div class="form-group">
       <label class="form-label">第2希望 到着時間帯<span class="req">必須</span></label>
       <select class="form-select" id="f_time2">
         <option value="">選択してください</option>
+        <option value="anytime">いつでも</option>
         <option value="8-9">8時〜9時の間に到着</option>
         <option value="12-15">12時〜15時の間に到着</option>
         <option value="15-18">15時〜18時の間に到着</option>
@@ -390,20 +459,54 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--cream);color:var(--t
       <div class="errmsg" id="err_time2">時間帯を選択してください</div>
     </div>
 
+    <!-- 第3希望 -->
     <div class="form-group">
       <label class="form-label">第3希望日<span class="req">必須</span></label>
-      <input type="date" class="form-input" id="f_date3">
+      <div class="date-radio-group" id="drg3">
+        <div class="date-radio-row sel" onclick="selectDateMode(3,'any')"><div class="radio-dot chk" id="dm3_any"></div><span class="radio-label">いつでも</span></div>
+        <div class="date-radio-row" onclick="selectDateMode(3,'dow')"><div class="radio-dot" id="dm3_dow"></div><span class="radio-label">曜日で指定</span></div>
+        <div class="date-radio-row" onclick="selectDateMode(3,'date')"><div class="radio-dot" id="dm3_date"></div><span class="radio-label">日付を指定</span></div>
+      </div>
+      <div id="dow_wrap3" style="display:none;margin:8px 0;">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button type="button" class="dow-btn sun" id="dow3_0" onclick="toggleDowBtn(3,0,'日')">日</button>
+          <button type="button" class="dow-btn" id="dow3_1" onclick="toggleDowBtn(3,1,'月')">月</button>
+          <button type="button" class="dow-btn" id="dow3_2" onclick="toggleDowBtn(3,2,'火')">火</button>
+          <button type="button" class="dow-btn" id="dow3_3" onclick="toggleDowBtn(3,3,'水')">水</button>
+          <button type="button" class="dow-btn" id="dow3_4" onclick="toggleDowBtn(3,4,'木')">木</button>
+          <button type="button" class="dow-btn" id="dow3_5" onclick="toggleDowBtn(3,5,'金')">金</button>
+          <button type="button" class="dow-btn sat" id="dow3_6" onclick="toggleDowBtn(3,6,'土')">土</button>
+        </div>
+      </div>
+      <input type="date" class="form-input" id="f_date3" style="display:none;margin-top:8px;">
       <div class="errmsg" id="err_date3">第3希望日をご入力ください</div>
     </div>
     <div class="form-group" style="margin-bottom:0;">
       <label class="form-label">第3希望 到着時間帯<span class="req">必須</span></label>
       <select class="form-select" id="f_time3">
         <option value="">選択してください</option>
+        <option value="anytime">いつでも</option>
         <option value="8-9">8時〜9時の間に到着</option>
         <option value="12-15">12時〜15時の間に到着</option>
         <option value="15-18">15時〜18時の間に到着</option>
       </select>
       <div class="errmsg" id="err_time3">時間帯を選択してください</div>
+    </div>
+  </div>
+
+  <!-- 空き枠案内 -->
+  <div class="card">
+    <div class="card-title"><span>✅</span>空き枠のご案内について</div>
+    <div class="form-group" style="margin-bottom:0;">
+      <div style="background:var(--rose-pale);border-radius:var(--radius-sm);padding:14px;cursor:pointer;border:1.5px solid transparent;transition:all .15s;" id="cancelSlotRow" onclick="toggleCancelSlot()">
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+          <div style="width:22px;height:22px;border-radius:6px;border:2px solid var(--border);background:white;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;transition:all .15s;" id="cancelSlotCheck"></div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);line-height:1.5;">空き枠が出たら連絡希望 ✅</div>
+            <div style="font-size:11px;color:var(--text-soft);margin-top:4px;line-height:1.6;">キャンセルや直前の空き枠が出た際に、LINEまたはメールで優先的にご案内します。</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -484,6 +587,35 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--cream);color:var(--t
     <span class="complete-icon">🎉</span>
     <div class="complete-title">予約リクエスト完了！</div>
     <div class="complete-sub">ご予約ありがとうございます✨<br>ご登録いただいたメールアドレスへ<br>担当スタッフよりご連絡いたします。<br><br>📧 メールが届きましたら<br>24時間以内にご返信ください🌸</div>
+
+    <!-- LINE友だち追加 -->
+    <div style="background:white;border-radius:var(--radius);padding:20px;margin-bottom:16px;border:2px solid #06C755;box-shadow:0 4px 20px rgba(6,199,85,.15);">
+      <div style="font-size:14px;font-weight:700;color:#06C755;font-family:'Zen Maru Gothic',sans-serif;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+        <span style="font-size:20px;">💬</span>LINEでのやりとりについて
+      </div>
+      <div style="font-size:12px;color:#444;line-height:1.8;margin-bottom:14px;">
+        スタッフからの連絡は<strong>メールまたはLINE</strong>で行います。<br>
+        LINEでのやりとりをご希望の方は、<br>
+        下のボタンから友だち追加をお願いします🌸<br>
+        <span style="color:#888;font-size:11px;">※ LINEが苦手な方はメールでも対応いたします</span>
+      </div>
+      <a href="https://lin.ee/QBn7mhL" target="_blank"
+        style="display:flex;align-items:center;justify-content:center;gap:10px;
+        background:#06C755;color:white;border-radius:12px;padding:14px;
+        font-size:15px;font-weight:700;font-family:'Zen Maru Gothic',sans-serif;
+        text-decoration:none;box-shadow:0 4px 14px rgba(6,199,85,.35);">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.477 2 2 6.145 2 11.243c0 2.921 1.463 5.527 3.75 7.242L5 21l2.833-1.49C9.1 20.147 10.516 20.5 12 20.5c5.523 0 10-4.145 10-9.257C22 6.145 17.523 2 12 2z"/></svg>
+        LINE公式アカウントを友だち追加する
+      </a>
+      <div style="margin-top:14px;background:#f0faf3;border-radius:10px;padding:12px;font-size:12px;color:#444;line-height:1.9;">
+        <div style="font-weight:700;color:#06C755;margin-bottom:6px;">📩 友だち追加後、以下のメッセージを送ってください</div>
+        <div style="background:white;border-radius:8px;padding:10px;font-size:13px;line-height:1.8;border:1px solid #d4f0de;">
+          ペライチ<br>
+          <span id="lineNameDisplay" style="font-weight:700;color:#333;"></span>
+        </div>
+        <div style="font-size:11px;color:#888;margin-top:6px;">※「ペライチ」の後に改行してお名前を送ってください</div>
+      </div>
+    </div>
     <div class="complete-box">
       <div class="complete-box-title">📋 ご予約内容</div>
       <div id="completeSummary"></div>
@@ -567,7 +699,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 function setMinDate() {
-  const d = new Date(); d.setDate(d.getDate()+7);
+  const d = new Date(); d.setDate(d.getDate()+5);
   const min = d.toISOString().slice(0,10);
   ['f_date1','f_date2','f_date3'].forEach(id => { const el=document.getElementById(id); if(el) el.min=min; });
 }
@@ -873,6 +1005,7 @@ function calc() {
   if(breakdown.length>0) bHtml+='<div class="bd-sep"></div><div class="bd-row bd-total"><span>合計</span><span>¥'+total.toLocaleString()+'</span></div>';
   document.getElementById('breakdown').innerHTML=bHtml;
   updateNextBtn();
+  calcWorkTime();
 }
 
 function updateNextBtn() {
@@ -881,7 +1014,18 @@ function updateNextBtn() {
 }
 
 // ===== ページ遷移 =====
-function goToConfirm() { buildConfirmSummary(); goToPage(2); }
+function goToConfirm() { buildConfirmSummary(); buildConfirmWorkTime(); goToPage(2); }
+
+function buildConfirmWorkTime() {
+  const card = document.getElementById('confirmWorkTimeCard');
+  const content = document.getElementById('confirmWorkTimeContent');
+  const srcCard = document.getElementById('workTimeCard');
+  const srcContent = document.getElementById('workTimeContent');
+  if(!card || !content || !srcCard) return;
+  if(srcCard.style.display === 'none') { card.style.display='none'; return; }
+  content.innerHTML = srcContent ? srcContent.innerHTML : '';
+  card.style.display = 'block';
+}
 function goToPage(n) {
   document.querySelectorAll('.page').forEach((p,i)=>p.classList.toggle('active',i===n-1));
   for(let i=1;i<=4;i++){
@@ -912,6 +1056,164 @@ function buildConfirmSummary() {
 
 function calcAcTotal() {
   return calcAcAmt(totalCount, osoujiCount) + acUnits.filter(u=>u.kosho).length * KOSHO_FEE;
+}
+
+// ===== 日程モード（ラジオ形式） =====
+const dateMode = {1:'any', 2:'any', 3:'any'};
+
+function selectDateMode(n, mode) {
+  dateMode[n] = mode;
+  ['any','dow','date'].forEach(m => {
+    const row = document.querySelector(`#drg${n} .date-radio-row:nth-child(${m==='any'?1:m==='dow'?2:3})`);
+    const dot = document.getElementById(`dm${n}_${m}`);
+    if(row) row.classList.toggle('sel', m===mode);
+    if(dot) dot.classList.toggle('chk', m===mode);
+  });
+  const dowWrap = document.getElementById('dow_wrap'+n);
+  if(dowWrap) dowWrap.style.display = mode==='dow' ? 'block' : 'none';
+  const dateEl = document.getElementById('f_date'+n);
+  if(dateEl) {
+    dateEl.style.display = mode==='date' ? 'block' : 'none';
+    dateEl.disabled = mode!=='date';
+    if(mode!=='date') dateEl.value='';
+    // 5日後以降のみ選択可能
+    if(mode==='date') {
+      const d = new Date(); d.setDate(d.getDate()+5);
+      dateEl.min = d.toISOString().slice(0,10);
+    }
+  }
+  if(mode!=='dow') { dowState[n]={}; for(let i=0;i<7;i++){const b=document.getElementById('dow'+n+'_'+i);if(b)b.classList.remove('active');} }
+}
+
+function getDowValue(n) {
+  const mode = dateMode[n];
+  if(mode==='any') return 'いつでも';
+  if(mode==='dow') {
+    const labels=['日','月','火','水','木','金','土'];
+    const sel = Object.entries(dowState[n]).filter(([,v])=>v).map(([k])=>labels[k]+'曜');
+    return sel.length>0 ? sel.join('・') : 'いつでも';
+  }
+  return document.getElementById('f_date'+n)?.value || '';
+}
+
+// ===== 空き枠チェック =====
+let cancelSlotChecked = false;
+function toggleCancelSlot() {
+  cancelSlotChecked = !cancelSlotChecked;
+  const row = document.getElementById('cancelSlotRow');
+  const check = document.getElementById('cancelSlotCheck');
+  if(row) row.style.borderColor = cancelSlotChecked ? 'var(--rose)' : 'transparent';
+  if(row) row.style.background = cancelSlotChecked ? '#fff0f4' : 'var(--rose-pale)';
+  if(check) { check.textContent = cancelSlotChecked ? '✓' : ''; check.style.background = cancelSlotChecked ? 'var(--rose-dark)' : 'white'; check.style.borderColor = cancelSlotChecked ? 'var(--rose-dark)' : 'var(--border)'; }
+}
+
+// ===== 曜日ボタン =====
+const dowState = {1:{}, 2:{}, 3:{}};
+function toggleDow(n, show) {
+  const wrap = document.getElementById('dow_wrap'+n);
+  if(wrap) wrap.style.display = show ? 'block' : 'none';
+  if(!show) {
+    dowState[n] = {};
+    for(let i=0;i<7;i++) {
+      const btn = document.getElementById('dow'+n+'_'+i);
+      if(btn) btn.classList.remove('active');
+    }
+  }
+  // いつでもいいと排他
+  if(show) {
+    const flex = document.getElementById('flex_date'+n);
+    if(flex && flex.checked) { flex.checked=false; toggleFlexDate(n,false); }
+  }
+}
+function toggleDowBtn(n, day, label) {
+  dowState[n][day] = !dowState[n][day];
+  const btn = document.getElementById('dow'+n+'_'+day);
+  if(btn) btn.classList.toggle('active', dowState[n][day]);
+}
+function getDowValue(n) {
+  const flex = document.getElementById('flex_date'+n)?.checked;
+  if(flex) return 'いつでもいい';
+  const dowCheck = document.getElementById('dow_check'+n)?.checked;
+  if(dowCheck) {
+    const labels = ['日','月','火','水','木','金','土'];
+    const selected = Object.entries(dowState[n]).filter(([,v])=>v).map(([k])=>labels[k]+'曜');
+    return selected.length > 0 ? selected.join('・') : '';
+  }
+  return document.getElementById('f_date'+n)?.value || '';
+}
+
+function toggleFlexDate(n, checked) {
+  const el = document.getElementById('f_date'+n);
+  if(!el) return;
+  if(checked) {
+    el.disabled=true; el.value=''; el.style.opacity='0.4';
+    // 曜日指定と排他
+    const dowCheck = document.getElementById('dow_check'+n);
+    if(dowCheck && dowCheck.checked) { dowCheck.checked=false; toggleDow(n,false); }
+  } else {
+    el.disabled=false; el.style.opacity='1';
+  }
+}
+
+// ===== 作業時間計算 =====
+function calcWorkTime() {
+  const card = document.getElementById('workTimeCard');
+  const content = document.getElementById('workTimeContent');
+  if(!card || !content) return;
+
+  let minMin = 0, maxMin = 0;
+  const lines = [];
+
+  // エアコン
+  if(totalCount > 0) {
+    const normalN = totalCount - osoujiCount;
+    const osoujiN = osoujiCount;
+    if(normalN > 0) {
+      minMin += normalN * 60; maxMin += normalN * 90;
+      lines.push('通常タイプ '+normalN+'台：'+normalN*60+'〜'+normalN*90+'分');
+    }
+    if(osoujiN > 0) {
+      minMin += osoujiN * 90; maxMin += osoujiN * 120;
+      lines.push('お掃除機能付き '+osoujiN+'台：'+osoujiN*90+'〜'+osoujiN*120+'分');
+    }
+  }
+
+  // セット（室外機・ドレン単体より優先）
+  const hasSet3    = (optQty['set_marugoto']||0) > 0;
+  const hasSet2    = (optQty['set_omatome']||0) > 0;
+  const hasGaiki   = (optQty['gaiki']||0) > 0;
+  const hasDorain  = (optQty['dorain']||0) > 0;
+
+  if(hasSet3) {
+    const q = optQty['set_marugoto'];
+    minMin += q*30; maxMin += q*30;
+    lines.push('まるごとセット ×'+q+'：'+q*30+'分');
+  } else if(hasSet2) {
+    const q = optQty['set_omatome'];
+    minMin += q*20; maxMin += q*20;
+    lines.push('おまとめセット ×'+q+'：'+q*20+'分');
+  } else {
+    if(hasGaiki) {
+      const q = optQty['gaiki'];
+      minMin += q*20; maxMin += q*20;
+      lines.push('室外機洗浄 ×'+q+'：'+q*20+'分');
+    }
+    if(hasDorain) {
+      const q = optQty['dorain'];
+      minMin += q*5; maxMin += q*5;
+      lines.push('ドレンホース ×'+q+'：'+q*5+'分');
+    }
+  }
+
+  if(minMin === 0) { card.style.display='none'; return; }
+
+  // 時間換算
+  const fmt = m => m >= 60 ? Math.floor(m/60)+'時間'+(m%60>0?m%60+'分':'') : m+'分';
+  const totalStr = minMin === maxMin ? fmt(minMin) : fmt(minMin)+'〜'+fmt(maxMin);
+
+  content.innerHTML = lines.map(l=>'<div style="display:flex;align-items:center;gap:6px;"><span style="color:var(--rose);">▷</span>'+l+'</div>').join('')+
+    '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-weight:700;font-size:15px;color:var(--rose-dark);">合計目安：約 '+totalStr+'</div>';
+  card.style.display = 'block';
 }
 
 // ===== 郵便番号検索 =====
@@ -954,12 +1256,6 @@ function validateForm() {
     {id:'f_zip',     em:'err_zip',     msg:'郵便番号をご入力ください'},
     {id:'f_address', em:'err_address', msg:'ご住所をご入力ください'},
     {id:'f_banchi',  em:'err_banchi',  msg:'番地をご入力ください'},
-    {id:'f_date1',   em:'err_date1',   msg:'第1希望日をご入力ください'},
-    {id:'f_time1',   em:'err_time1',   msg:'第1希望の時間帯を選択してください'},
-    {id:'f_date2',   em:'err_date2',   msg:'第2希望日をご入力ください'},
-    {id:'f_time2',   em:'err_time2',   msg:'第2希望の時間帯を選択してください'},
-    {id:'f_date3',   em:'err_date3',   msg:'第3希望日をご入力ください'},
-    {id:'f_time3',   em:'err_time3',   msg:'第3希望の時間帯を選択してください'},
   ];
   req.forEach(f=>{
     const el=document.getElementById(f.id), em=document.getElementById(f.em);
@@ -967,6 +1263,19 @@ function validateForm() {
     if(el) el.classList.toggle('err',!v);
     if(em){ em.classList.toggle('show',!v); }
     if(!v) ok=false;
+  });
+  // 日程バリデーション（いつでもいいチェック時はスキップ）
+  [1,2,3].forEach(n => {
+    const mode = dateMode[n];
+    const dowSelected = mode==='dow' && Object.values(dowState[n]).some(Boolean);
+    const dateEl = document.getElementById('f_date'+n);
+    const timeEl = document.getElementById('f_time'+n);
+    const dateErr = document.getElementById('err_date'+n);
+    const timeErr = document.getElementById('err_time'+n);
+    if(mode==='date' && !dateEl.value){ dateEl.classList.add('err'); if(dateErr) dateErr.classList.add('show'); ok=false; }
+    else{ dateEl.classList.remove('err'); if(dateErr) dateErr.classList.remove('show'); }
+    if(!timeEl.value){ if(timeErr) timeErr.classList.add('show'); ok=false; }
+    else{ if(timeErr) timeErr.classList.remove('show'); }
   });
   // 利用回数
   const errV=document.getElementById('err_visit');
@@ -998,7 +1307,8 @@ function validateForm() {
 function submitBooking() {
   if(!validateForm()){ window.scrollTo({top:0,behavior:'smooth'}); return; }
   const total=getTotalAmount();
-  const tmap={'8-9':'8〜9時着','12-15':'12〜15時着','15-18':'15〜18時着','':'希望なし'};
+  const tmap={'8-9':'8〜9時着','12-15':'12〜15時着','15-18':'15〜18時着','anytime':'いつでもいい','':'希望なし'};
+  const getDate = n => getDowValue(n);
   const pmap={cash:'現金',card:'クレジットカード',paypay:'PayPay'};
   const mmap={yourmeister:'ユアマイスター',kurashi:'くらしのマーケット',mitsumoa:'ミツモア',ouchini:'おうちにプロ',other:'その他'};
   const acUnitInfo=acUnits.map((u,i)=>({
@@ -1018,9 +1328,9 @@ function submitBooking() {
     zip:document.getElementById('f_zip').value.trim(),
     address:document.getElementById('f_address').value.trim()+' '+document.getElementById('f_banchi').value.trim(),
     building:document.getElementById('f_building').value.trim(),
-    date1:document.getElementById('f_date1').value, time1:tmap[document.getElementById('f_time1').value]||'',
-    date2:document.getElementById('f_date2').value, time2:tmap[document.getElementById('f_time2').value]||'',
-    date3:document.getElementById('f_date3').value, time3:tmap[document.getElementById('f_time3').value]||'',
+    date1:getDate(1), time1:tmap[document.getElementById('f_time1').value]||'',
+    date2:getDate(2), time2:tmap[document.getElementById('f_time2').value]||'',
+    date3:getDate(3), time3:tmap[document.getElementById('f_time3').value]||'',
     acUnits:acUnitInfo,
     acOptions:AC_OPTIONS.filter(o=>(optQty[o.id]||0)>0).map(o=>o.name+'×'+optQty[o.id]).join('、')||'なし',
     optDetails:AC_OPTIONS.filter(o=>(optQty[o.id]||0)>0).map(o=>({name:o.name,qty:optQty[o.id],price:o.price*(optQty[o.id]||0)})),
@@ -1033,7 +1343,7 @@ function submitBooking() {
     pet:radioState['pet']==='yes'?'あり（'+(document.getElementById('f_pet').value.trim())+'）':'なし',
     visitCount:radioState['visit']==='first'?'はじめて':'2回目以上',
     prevMedia:radioState['visit']==='repeat'?(mmap[radioState['media']||'']||''):'-',
-    note:document.getElementById('f_note').value.trim(),
+    cancelSlot: cancelSlotChecked ? '希望する' : '希望しない',
     acEstimate, optEstimate, bathEstimate, houseEstimate, koshoEstimate,
     normalCount: totalCount - osoujiCount,
     osoujiCount: osoujiCount,
@@ -1066,6 +1376,9 @@ function showComplete(d) {
   if(d.payment) rows+=`<div class="confirm-row"><span class="confirm-label">お支払い</span><span class="confirm-value">${d.payment}</span></div>`;
   rows+=`<div class="confirm-row"><span class="confirm-label">概算金額</span><span class="confirm-value" style="color:var(--rose-dark);font-size:16px;">¥${d.estimate.toLocaleString()}</span></div>`;
   document.getElementById('completeSummary').innerHTML=rows;
+  // LINE案内にお名前を表示
+  const lineNameEl = document.getElementById('lineNameDisplay');
+  if(lineNameEl) lineNameEl.textContent = data.name || 'お名前';
   goToPage(4);
 }
 
@@ -1083,7 +1396,15 @@ function restartAll() {
   ['f_time1','f_time2','f_time3'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.querySelectorAll('.radio-dot').forEach(el=>el.classList.remove('chk'));
   document.querySelectorAll('.radio-row').forEach(el=>el.classList.remove('sel'));
-  toggleMedia(false);  const btn=document.querySelector('.submit-btn');
+  toggleMedia(false);
+  // 日程モードリセット
+  dateMode[1]='any'; dateMode[2]='any'; dateMode[3]='any';
+  [1,2,3].forEach(n=>selectDateMode(n,'any'));
+  // 空き枠リセット
+  cancelSlotChecked=false;
+  const cRow=document.getElementById('cancelSlotRow'); if(cRow){cRow.style.borderColor='transparent';cRow.style.background='var(--rose-pale)';}
+  const cCheck=document.getElementById('cancelSlotCheck'); if(cCheck){cCheck.textContent='';cCheck.style.background='white';cCheck.style.borderColor='var(--border)';}
+  const btn=document.querySelector('.submit-btn');
   if(btn){btn.disabled=false;btn.innerHTML='🌸 予約リクエストを送信する';}
   switchTab('ac');
   renderAcOptions(); renderBathList(); renderHouseList(); calc();
