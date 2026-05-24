@@ -608,12 +608,20 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--cream);color:var(--t
         LINE公式アカウントを友だち追加する
       </a>
       <div style="margin-top:14px;background:#f0faf3;border-radius:10px;padding:12px;font-size:12px;color:#444;line-height:1.9;">
-        <div style="font-weight:700;color:#06C755;margin-bottom:6px;">📩 友だち追加後、以下のメッセージを送ってください</div>
-        <div style="background:white;border-radius:8px;padding:10px;font-size:13px;line-height:1.8;border:1px solid #d4f0de;">
-          ペライチ<br>
-          <span id="lineNameDisplay" style="font-weight:700;color:#333;"></span>
+        <div style="font-weight:700;color:#06C755;margin-bottom:6px;">📩 友だち追加後、以下をコピーして送ってください</div>
+        <div style="position:relative;">
+          <textarea id="lineMessageBox" readonly
+            style="width:100%;background:white;border-radius:8px;padding:10px;font-size:14px;line-height:1.8;border:1px solid #d4f0de;resize:none;font-family:'Noto Sans JP',sans-serif;color:#333;cursor:pointer;"
+            rows="2"
+            onclick="copyLineMessage()">ペライチ
+</textarea>
+          <button onclick="copyLineMessage()"
+            style="position:absolute;top:8px;right:8px;background:#06C755;color:white;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;">
+            コピー
+          </button>
         </div>
-        <div style="font-size:11px;color:#888;margin-top:6px;">※「ペライチ」の後に改行してお名前を送ってください</div>
+        <div id="copyDone" style="display:none;font-size:11px;color:#06C755;font-weight:700;margin-top:4px;">✅ コピーしました！</div>
+        <div style="font-size:11px;color:#888;margin-top:4px;">※「ペライチ」の下にお名前が入っています</div>
       </div>
     </div>
     <div class="complete-box">
@@ -1380,9 +1388,23 @@ function showComplete(d) {
   rows+=`<div class="confirm-row"><span class="confirm-label">概算金額</span><span class="confirm-value" style="color:var(--rose-dark);font-size:16px;">¥${d.estimate.toLocaleString()}</span></div>`;
   document.getElementById('completeSummary').innerHTML=rows;
   // LINE案内にお名前を表示
-  const lineNameEl = document.getElementById('lineNameDisplay');
-  if(lineNameEl) lineNameEl.textContent = d.name || 'お名前';
+  const lineBox = document.getElementById('lineMessageBox');
+  if(lineBox) lineBox.value = 'ペライチ\n' + (d.name || 'お名前');
   goToPage(4);
+}
+
+function copyLineMessage() {
+  const box = document.getElementById('lineMessageBox');
+  if(!box) return;
+  box.select();
+  box.setSelectionRange(0, 99999);
+  try {
+    document.execCommand('copy');
+  } catch(e) {
+    navigator.clipboard?.writeText(box.value);
+  }
+  const done = document.getElementById('copyDone');
+  if(done) { done.style.display='block'; setTimeout(()=>done.style.display='none', 2000); }
 }
 
 // ===== リスタート =====
